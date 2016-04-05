@@ -1,3 +1,4 @@
+# various R files
 .Rproj.user
 .Rhistory
 .RData
@@ -5,5 +6,8 @@
 .Rprofile
 .Renviron
 
-# ignore rendered html files
+# rendered html files
 *.html
+
+# data directory
+/data
