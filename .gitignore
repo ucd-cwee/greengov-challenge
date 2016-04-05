@@ -4,3 +4,6 @@
 .Ruserdata
 .Rprofile
 .Renviron
+
+# ignore rendered html files
+*.html
