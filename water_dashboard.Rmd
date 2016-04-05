@@ -1,0 +1,82 @@
+---
+title: "Water Use"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    social: menu
+    source_code: https://github.com/ucd-cwee/greengov-challenge
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(leaflet)
+
+# code
+# ...
+
+```
+
+Sidebar {.sidebar}
+=======================================================================
+
+### Water Utility
+
+Choose a utility
+
+```{r}
+# Utility select
+selectInput("utility", "Utility:", choices = LETTERS)
+
+# Year
+dateInput("date", "Date:")
+```
+
+
+Mandated Reductions
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+### Water Savings {.value-box}
+
+```{r}
+# water savings
+renderValueBox({
+  valueBox(value = 5, icon = "fa-area-chart")
+})
+```
+
+### GHG Emissions {.value-box}
+
+```{r}
+# GHG emissions
+renderValueBox({
+  valueBox(10, icon = "fa-line-chart")
+})
+```
+
+
+Row
+-----------------------------------------------------------------------
+
+### Map
+
+```{r}
+renderLeaflet({
+  leafletOutput('map')
+})
+```
+
+
+Water Quality
+=======================================================================
+
+### Water Quality
+
+```{r}
+renderTable({
+  data.frame(a = 1:10, b = LETTERS[1:10])
+})
+```
