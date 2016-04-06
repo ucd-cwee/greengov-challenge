@@ -1,0 +1,13 @@
+# various R files
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Rprofile
+.Renviron
+
+# rendered html files
+*.html
+
+# data directory
+/data
