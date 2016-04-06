@@ -1,4 +1,3 @@
-
 wc_funs <- new.env()
 
 source("~/Documents/R/R_convenience/helper_functions.R",
@@ -6,7 +5,7 @@ source("~/Documents/R/R_convenience/helper_functions.R",
 
 ## handy reload-self function
 wc_funs$reloadFunctions <- function(){
-    source("~/Documents/waterDataChallenge/functions.R",
+    source("~/Documents/greengov-challenge/yoni-code/functions.R",
            local = globalenv())
 }
 
@@ -25,7 +24,7 @@ wc_funs$inquireReload <- function(yesNoQuestion, answer = NULL){
 
 ## load the benthic data
 wc_funs$loadBenthicData <- function(reload = NULL, env = globalenv()){
-    setwd("~/Documents/waterDataChallenge/Data")
+    setwd("~/Documents/greengov-challenge/Data")
     ans <- wc_funs$inquireReload("reload Benthic data?",
                                  answer = reload)
     if(ans == "y"){
@@ -39,7 +38,7 @@ wc_funs$loadBenthicData <- function(reload = NULL, env = globalenv()){
 
 ## load the water supplier data
 wc_funs$loadSupplierData <- function(reload = NULL, env = globalenv()){
-    setwd("~/Documents/waterDataChallenge/Data/")
+    setwd("~/Documents/greengov-challenge/Data/")
     ans <- wc_funs$inquireReload("reload supplier data?",
                                  answer = reload)
     if(ans == "y"){
@@ -89,7 +88,7 @@ wc_funs$loadSupplierData <- function(reload = NULL, env = globalenv()){
 ## load file linking Supplier_Name with PWSID_1
 wc_funs$loadSupplierIdData <- function(reload = NULL, env = globalenv()){
     ## pwid lookup table
-    setwd("~/Documents/waterDataChallenge/Data/")
+    setwd("~/Documents/greengov-challenge/Data/")
     ans <- wc_funs$inquireReload("reload id data?",
                                  answer = reload)
     if(ans == "y"){
