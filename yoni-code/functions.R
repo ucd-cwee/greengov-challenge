@@ -42,6 +42,8 @@ wc_funs$loadSupplierData <- function(reload = NULL, env = globalenv()){
     ans <- wc_funs$inquireReload("reload supplier data?",
                                  answer = reload)
     if(ans == "y"){
+
+        ## retrieve and edit raw files
         file_names <- list.files(getwd(), pattern = "16")
         waterSupplierReport <- llply(file_names, read_excel)
         waterSupplierReport <- rbind.fill(waterSupplierReport)
@@ -57,8 +59,7 @@ wc_funs$loadSupplierData <- function(reload = NULL, env = globalenv()){
         waterServiceAreas <- readShapeSpatial(paste0("Drought_Water_Service",
                                                      "_Areas_complete.shp"))
 
-        ## create the fields of interest:
-
+        ## create the fields of interest
         waterSupplierReport <- waterSupplierReport %>%
             dplyr::mutate(TotMonthlyH20Prod2013 =
                               as.numeric(TotMonthlyH20Prod2013),
@@ -85,18 +86,20 @@ wc_funs$loadSupplierData <- function(reload = NULL, env = globalenv()){
     return(0)
 }
 
-## load file linking Supplier_Name with PWSID_1
+## load dataframe linking Supplier_Name with PWSID_1
 wc_funs$loadSupplierIdData <- function(reload = NULL, env = globalenv()){
-    ## pwid lookup table
     setwd("~/Documents/greengov-challenge/Data/")
     ans <- wc_funs$inquireReload("reload id data?",
                                  answer = reload)
     if(ans == "y"){
+
+        ## retrieve and edit raw files
         waterService_id <- read_excel("UWMP_PWS_IDs_07-29-14.xls")
         comparison <- read.csv(file = "districtComparison.csv") %>%
             dplyr::select(Supplier_Name, Urban_Water_Supplier) %>%
             dplyr::distinct(Supplier_Name, Urban_Water_Supplier)
 
+        ## put the files together
         waterService_id <- left_join(waterService_id, comparison,
                                      by = "Urban_Water_Supplier") %>%
             dplyr::select(Supplier_Name, PWSID_1 = PWS_ID)
