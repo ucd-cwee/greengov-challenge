@@ -36,6 +36,22 @@ wc_funs$loadBenthicData <- function(reload = NULL, env = globalenv()){
     return(0)
 }
 
+## get the storm water violations data
+wc_funs$loadStormWaterViolationsData <- function(reload = NULL,
+                                             env = globalenv()){
+    setwd("~/Documents/greengov-challenge/Data")
+    ans <- wc_funs$inquireReload("reload Storm Water Violations data?",
+                                 answer = reload)
+    if(ans == "y"){
+        stormViolationsData <- content(GET(paste0("https://greengov.data.ca.",
+                                                  "gov/resource/g3wm-ares.json")
+                                           ))
+        save(strmData, file =  "stormViolationsData.rda")
+    } 
+    load("stromViolations.rda", envir = env)
+    return(0)
+}
+
 ## load the water supplier data
 wc_funs$loadSupplierData <- function(reload = NULL, env = globalenv()){
     setwd("~/Documents/greengov-challenge/Data/")
