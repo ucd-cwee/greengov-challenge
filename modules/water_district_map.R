@@ -1,10 +1,12 @@
 
 # water district leaflet map
 library("shiny")
+library("tidyr")
 library("dplyr")
 library("leaflet")
 library("lubridate")
 library("highcharter")
+
 
 # module UI function
 waterConservationInput <- function(id) {
@@ -70,15 +72,27 @@ waterConservation <- function(input, output, session,
   
   # render chart
   output$usage_chart <- renderHighchart({
-    util_d <- util_data() %>% arrange(date)
+    
+    util_d <- util_data() %>%
+      mutate(month = month(date, label = TRUE),
+             year = year(date)) %>% 
+      select(month, year, TotMonthlyH20ProdCurrent) %>%
+      spread(year, TotMonthlyH20ProdCurrent) %>%
+      arrange(month)
+    
     highchart() %>% 
       hc_chart(type = "column") %>% 
       hc_title(text = "Water Production") %>% 
-      hc_xAxis(Date = util_d$date) %>% 
-      hc_add_series(data = util_d$TotMonthlyH20ProdCurrent,
-                    name = "Production (gallons)")
+      hc_xAxis(categories = util_d$month) %>% 
+      hc_add_series(data = util_d$`2014`, name = "2014") %>% 
+      hc_add_series(data = util_d$`2015`, name = "2015") %>% 
+      hc_add_series(data = util_d$`2016`, name = "2016") %>% 
+      hc_colors(c('#717CFF','#69B245','#FF9C71')) %>% 
+      hc_tooltip(crosshairs = TRUE, shared = TRUE) %>% 
+      hc_credits(enabled = TRUE, text = "Source: State Water Board",
+                 href = "http://www.waterboards.ca.gov/water_issues/programs/conservation_portal/conservation_reporting.shtml") %>% 
+      hc_exporting(enabled = TRUE)
   })
-  
   
   # return (reactive function with) selected utility data
   util_data
