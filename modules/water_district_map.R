@@ -1,11 +1,13 @@
 
 # water district leaflet map
-library(shiny, quietly = TRUE)
-library(leaflet, quietly = TRUE)
-library(lubridate, quietly = TRUE)
+library("shiny")
+library("dplyr")
+library("leaflet")
+library("lubridate")
+library("highcharter")
 
 # module UI function
-waterDistMapInput <- function(id) {
+waterConservationInput <- function(id) {
   
   # create namespace
   ns <- NS(id)
@@ -14,7 +16,7 @@ waterDistMapInput <- function(id) {
   uiOutput(ns("controls"))
 }
 
-waterDistMapOutput1 <- function(id) {
+waterConservationOutput1 <- function(id) {
   
   # create namespace
   ns <- NS(id)
@@ -23,9 +25,18 @@ waterDistMapOutput1 <- function(id) {
   leafletOutput(ns("map"))
 }
 
+waterConservationOutput2 <- function(id) {
+  
+  # create namespace
+  ns <- NS(id)
+  
+  # return output
+  highchartOutput(ns("usage_chart"))
+}
+
 # module server function
-waterDistMap <- function(input, output, session,
-                         map_data, water_data, id_field, name_field, date_field) {
+waterConservation <- function(input, output, session,
+                              map_data, water_data, id_field, name_field) {
   
   # all utilities
   allUtil_df <- unique(water_data[,c(id_field, name_field)])
@@ -45,6 +56,11 @@ waterDistMap <- function(input, output, session,
     input$utility
   })
   
+  # selected utility data
+  util_data <- reactive({
+    water_data[water_data[,id_field] == util(),]
+  })
+  
   # render map
   output$map <- renderLeaflet({
     leaflet(map_data[map_data@data[,id_field] == util(),]) %>%
@@ -52,11 +68,20 @@ waterDistMap <- function(input, output, session,
       addPolygons()
   })
   
-  # return percent reduction
-  reactive({
-    savings <- water_data$proportionChange[water_data[,id_field] == util() & water_data[,date_field] == ymd('2016-02-15')]
-    round(savings * 100, 1)
+  # render chart
+  output$usage_chart <- renderHighchart({
+    util_d <- util_data() %>% arrange(date)
+    highchart() %>% 
+      hc_chart(type = "column") %>% 
+      hc_title(text = "Water Production") %>% 
+      hc_xAxis(Date = util_d$date) %>% 
+      hc_add_series(data = util_d$TotMonthlyH20ProdCurrent,
+                    name = "Production (gallons)")
   })
+  
+  
+  # return (reactive function with) selected utility data
+  util_data
 }
 
 

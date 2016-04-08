@@ -20,8 +20,8 @@ water_use <- readRDS('data/water_use.rds')
 # load and call modules
 source('modules/water_district_map.R')
 
-util <- callModule(waterDistMap, "water_districts", map_data = water_dist,
-                     water_data = water_use, id_field = 'PWSID_1', name_field = 'Supplier_Name', date_field = 'date')
+util <- callModule(waterConservation, "water_districts", map_data = water_dist,
+                   water_data = water_use, id_field = 'PWSID_1', name_field = 'Supplier_Name')
 ```
 
 Sidebar {.sidebar}
@@ -30,7 +30,7 @@ Sidebar {.sidebar}
 ### Water Utilities
 
 ```{r}
-waterDistMapInput('water_districts')
+waterConservationInput('water_districts')
 ```
 
 
@@ -43,7 +43,7 @@ Column {data-width=650}
 ### {.nopadding}
 
 ```{r}
-waterDistMapOutput('water_districts')
+waterConservationOutput1('water_districts')
 ```
 
 Column {data-width=350}
@@ -54,7 +54,9 @@ Column {data-width=350}
 ```{r}
 # water savings
 renderValueBox({
-  valueBox(value = util())
+  util_data <- util()
+  percent_sagings <- sprintf('%.1f%%', util_data$proportionChange[1] * 100)
+  valueBox(value = percent_sagings)
 })
 ```
 
@@ -71,7 +73,7 @@ renderValueBox({
 ### {.nopadding}
 
 ```{r}
-
+waterConservationOutput2('water_districts')
 ```
 
 ### {.nopadding}

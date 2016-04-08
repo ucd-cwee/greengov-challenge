@@ -24,22 +24,26 @@ ui <- shinyUI(fluidPage(
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-        waterDistMapInput('water_districts')
+        waterConservationInput('water_districts')
       ),
       
       mainPanel(
-        waterDistMapOutput1('water_districts'),
-        waterDistMapOutput2('water_districts')
+        waterConservationOutput1('water_districts'),
+        waterConservationOutput2('water_districts'),
+        textOutput('savings')
       )
    )
 ))
 
 # Define server logic required to draw a histogram
 server <- shinyServer(function(input, output, session) {
-  util <- callModule(waterDistMap, "water_districts", map_data = water_dist,
-                     water_data = water_use, id_field = 'PWSID_1', name_field = 'Supplier_Name', date_field = 'date')
+  util <- callModule(waterConservation, "water_districts", map_data = water_dist,
+                     water_data = water_use, id_field = 'PWSID_1', name_field = 'Supplier_Name')
   
-  output$savings <- reactive({ util() })
+  output$savings <- reactive({
+    util_data <- util()
+    sprintf('%.1f%%', util_data$proportionChange[1] * 100)
+  })
 })
 
 # Run the application 
