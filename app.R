@@ -24,7 +24,8 @@ ui <- shinyUI(fluidPage(
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-        waterConservationInput('water_districts')
+        waterConservationInput1('water_districts'),
+        waterConservationInput2('water_districts')
       ),
       
       mainPanel(
@@ -42,7 +43,8 @@ server <- shinyServer(function(input, output, session) {
   
   output$savings <- reactive({
     util_data <- util()
-    sprintf('%.1f%%', util_data$proportionChange[1] * 100)
+    prop_change <- mean((util_data %>% filter(selected) %>% .$proportionChange), na.rm = TRUE)
+    sprintf('%.1f%%', prop_change * 100)
   })
 })
 

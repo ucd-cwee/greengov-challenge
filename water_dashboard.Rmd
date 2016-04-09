@@ -30,7 +30,8 @@ Sidebar {.sidebar}
 ### Water Utilities
 
 ```{r}
-waterConservationInput('water_districts')
+waterConservationInput1('water_districts')
+div(style = "margin: 0px 5px", waterConservationInput2('water_districts'))
 ```
 
 
@@ -55,8 +56,8 @@ Column {data-width=350}
 # water savings
 renderValueBox({
   util_data <- util()
-  percent_sagings <- sprintf('%.1f%%', util_data$proportionChange[1] * 100)
-  valueBox(value = percent_sagings)
+    prop_change <- mean((util_data %>% filter(selected) %>% .$proportionChange), na.rm = TRUE)
+    sprintf('%.1f%%', prop_change * 100)
 })
 ```
 
