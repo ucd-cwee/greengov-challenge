@@ -49,6 +49,8 @@ waterConservationOutput2 <- function(id) {
 waterConservation <- function(input, output, session,
                               map_data, water_data, id_field, name_field) {
   
+  vals <- reactiveValues(last_util = NULL)
+  
   # all utilities
   allUtil_df <- unique(water_data[,c(id_field, name_field)])
   allUtil <- setNames(allUtil_df$PWSID_1, allUtil_df$Supplier_Name)
@@ -78,13 +80,34 @@ waterConservation <- function(input, output, session,
                 value = c(min(dat$date), max(dat$date)), timeFormat = "%b %Y")
   })
   
-  # render map
+  # Map --------------------------------------------------------------------
+  # render complete map
   output$map <- renderLeaflet({
-    leaflet(map_data[map_data@data[,id_field] == util(),]) %>%
-      addProviderTiles("CartoDB.Positron", group = "Grayscale") %>%
-      addPolygons()
+    leaflet(map_data) %>%
+      addProviderTiles("CartoDB.Positron", group = "Grayscale") %>% 
+      addPolygons(layerId = ~PWSID_1)
   })
   
+  # update selected utility in UI menu
+  observeEvent(input$map_shape_click$id, {
+    #ns <- session$ns
+    updateSelectInput(session, inputId = 'utility', selected = input$map_shape_click$id)
+  })
+  
+  # update selected polygon on map
+  observeEvent(util(), {
+    ns <- session$ns
+    last_selectedPoly <- map_data[map_data@data[,id_field] == vals$last_util,]
+    selectedPoly <- map_data[map_data@data[,id_field] == util(),]
+    b <- selectedPoly@bbox
+    leafletProxy(ns('map')) %>% 
+      addPolygons(data = last_selectedPoly, layerId = ~PWSID_1, color = "#03F") %>% 
+      addPolygons(data = selectedPoly, layerId = ~PWSID_1, color = "#000") %>% 
+      fitBounds(b['x','min'], b['y','min'],b['x','max'], b['y','max'])
+    vals$last_util <- util()
+  })
+  
+  # Chart -------------------------------------------------------------------
   # render chart
   output$usage_chart <- renderHighchart({
     
@@ -125,7 +148,7 @@ waterConservation <- function(input, output, session,
       hc_exporting(enabled = TRUE)
   })
   
-  # return (reactive function with) selected utility data
+  # return (reactive function with) selected utility data --------------------
   reactive({
     validate(need(input$daterange, message = FALSE))
     util_data() %>% mutate(selected = between(floor_date(date), input$daterange[1], input$daterange[2]) | between(ceiling_date(date, unit = 'month') - 1, input$daterange[1], input$daterange[2]))
