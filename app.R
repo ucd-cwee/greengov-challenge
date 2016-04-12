@@ -42,9 +42,12 @@ server <- shinyServer(function(input, output, session) {
                      water_data = water_use, id_field = 'PWSID_1', name_field = 'Supplier_Name')
   
   output$savings <- reactive({
-    util_data <- util()
-    prop_change <- mean((util_data %>% filter(selected) %>% .$proportionChange), na.rm = TRUE)
-    sprintf('%.1f%%', prop_change * 100)
+    util_data <- util() %>% 
+      filter(selected) %>% 
+      summarise(gal_2013 = sum(TotMonthlyH20Prod2013),
+                gal_cur = sum(TotMonthlyH20ProdCurrent)) %>% 
+      mutate(prop_change = (gal_2013 - gal_cur) / gal_2013)
+    sprintf('%.1f%%', util_data$prop_change * 100)
   })
   
   output$ghg <- reactive({
