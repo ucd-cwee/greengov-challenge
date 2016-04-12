@@ -56,8 +56,8 @@ Column {data-width=350}
 # water savings
 renderValueBox({
   util_data <- util()
-    prop_change <- mean((util_data %>% filter(selected) %>% .$proportionChange), na.rm = TRUE)
-    sprintf('%.1f%%', prop_change * 100)
+  prop_change <- mean((util_data %>% filter(selected) %>% .$proportionChange), na.rm = TRUE)
+  sprintf('%.1f%%', prop_change * 100)
 })
 ```
 
@@ -66,7 +66,11 @@ renderValueBox({
 ```{r}
 # GHG emissions
 renderValueBox({
-  valueBox(value = NULL)
+  water_saved <- util() %>%
+    filter(selected) %>%
+    mutate(mg_change = (TotMonthlyH20Prod2013 - TotMonthlyH20ProdCurrent) / 1e6,
+           ton_co2_saved = mg_change * ghg_factor)
+  paste(format(round(sum(water_saved$ton_co2_saved, na.rm = TRUE)), big.mark=",", scientific=FALSE), 'tons CO2e')
 })
 ```
 

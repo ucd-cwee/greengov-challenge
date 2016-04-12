@@ -15,7 +15,6 @@ source('modules/water_district_map.R')
 
 #  ------------------------------------------------------------------------
 
-# Define UI for application that draws a histogram
 ui <- shinyUI(fluidPage(
    
    # Application title
@@ -31,12 +30,13 @@ ui <- shinyUI(fluidPage(
       mainPanel(
         waterConservationOutput1('water_districts'),
         waterConservationOutput2('water_districts'),
-        textOutput('savings')
+        textOutput('savings'),
+        textOutput('ghg')
       )
    )
 ))
 
-# Define server logic required to draw a histogram
+
 server <- shinyServer(function(input, output, session) {
   util <- callModule(waterConservation, "water_districts", map_data = water_dist,
                      water_data = water_use, id_field = 'PWSID_1', name_field = 'Supplier_Name')
@@ -46,6 +46,15 @@ server <- shinyServer(function(input, output, session) {
     prop_change <- mean((util_data %>% filter(selected) %>% .$proportionChange), na.rm = TRUE)
     sprintf('%.1f%%', prop_change * 100)
   })
+  
+  output$ghg <- reactive({
+    water_saved <- util() %>%
+      filter(selected) %>%
+      mutate(mg_change = (TotMonthlyH20Prod2013 - TotMonthlyH20ProdCurrent) / 1e6,
+             ton_co2_saved = mg_change * ghg_factor)
+    paste(format(round(sum(water_saved$ton_co2_saved, na.rm = TRUE)), big.mark=",", scientific=FALSE), 'tons CO2e')
+  })
+  
 })
 
 # Run the application 
