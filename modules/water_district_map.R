@@ -1,8 +1,8 @@
 
 # water district leaflet map
 library("shiny")
-library("tidyr")
 library("dplyr")
+library("purrr")
 library("leaflet")
 library("lubridate")
 library("highcharter")
@@ -49,7 +49,7 @@ waterConservationOutput2 <- function(id) {
 waterConservation <- function(input, output, session,
                               map_data, water_data, id_field, name_field) {
   
-  vals <- reactiveValues(last_util = NULL)
+  vals <- reactiveValues(last_util = NULL, from_menu = TRUE)
   
   # all utilities
   allUtil_df <- unique(water_data[,c(id_field, name_field)])
@@ -75,9 +75,8 @@ waterConservation <- function(input, output, session,
   # update UI control
   output$daterange <- renderUI({
     ns <- session$ns
-    dat <- util_data()
-    sliderInput(ns('daterange'), label = "Date Range", min = min(dat$date), max = max(dat$date),
-                value = c(min(dat$date), max(dat$date)), timeFormat = "%b %Y")
+    sliderInput(ns('daterange'), label = "Date Range", min = as.Date('2015-6-1'), max = as.Date('2016-2-29'),
+                value = c(as.Date('2015-6-1'), as.Date('2016-2-29')), timeFormat = "%b %Y")
   })
   
   # Map --------------------------------------------------------------------
@@ -91,6 +90,7 @@ waterConservation <- function(input, output, session,
   # update selected utility in UI menu
   observeEvent(input$map_shape_click$id, {
     #ns <- session$ns
+    vals$from_menu <- FALSE
     updateSelectInput(session, inputId = 'utility', selected = input$map_shape_click$id)
   })
   
@@ -100,52 +100,66 @@ waterConservation <- function(input, output, session,
     last_selectedPoly <- map_data[map_data@data[,id_field] == vals$last_util,]
     selectedPoly <- map_data[map_data@data[,id_field] == util(),]
     b <- selectedPoly@bbox
+    
     leafletProxy(ns('map')) %>% 
       addPolygons(data = last_selectedPoly, layerId = ~PWSID_1, color = "#03F") %>% 
-      addPolygons(data = selectedPoly, layerId = ~PWSID_1, color = "#000") %>% 
-      fitBounds(b['x','min'], b['y','min'],b['x','max'], b['y','max'])
+      addPolygons(data = selectedPoly, layerId = ~PWSID_1, color = "#000")
     vals$last_util <- util()
-  })
+    
+    if (vals$from_menu) {
+      leafletProxy(ns('map')) %>% fitBounds(b['x','min'], b['y','min'],b['x','max'], b['y','max'])
+      vals$from_menu <- TRUE
+    }
+  }, priority = -1)
+  
   
   # Chart -------------------------------------------------------------------
   # render chart
   output$usage_chart <- renderHighchart({
     
-    validate(need(input$daterange, message = FALSE))
+    validate(need(input$daterange, message = FALSE),
+             need(util_data(), message = FALSE))
     
-    # data
-    util_d <- util_data() %>%
-      mutate(month = month(date, label = TRUE),
-             year = year(date)) %>% 
-      select(year, month, TotMonthlyH20ProdCurrent) %>%
-      spread(year, TotMonthlyH20ProdCurrent) %>%
-      arrange(month)
-    
-    util_d_2014 <- util_d %>% select(month, values = `2014`) %>%
-      mutate(month_start = as.Date(paste0('2014-',as.numeric(month),'-1')),
-             month_end = ceiling_date(month_start + 1, unit = 'month') - 1,
-             col = ifelse(between(month_start, input$daterange[1], input$daterange[2]) | between(month_end, input$daterange[1], input$daterange[2]), '#717CFF', '#B8BDFF'))
-    util_d_2015 <- util_d %>% select(month, values = `2015`) %>%
-      mutate(month_start = as.Date(paste0('2015-',as.numeric(month),'-1')),
-             month_end = ceiling_date(month_start + 1, unit = 'month') - 1,
-             col = ifelse(between(month_start, input$daterange[1], input$daterange[2]) | between(month_end, input$daterange[1], input$daterange[2]), '#69B245', '#99B28D'))
-    util_d_2016 <- util_d %>% select(month, values = `2016`) %>%
-      mutate(month_start = as.Date(paste0('2016-',as.numeric(month),'-1')),
-             month_end = ceiling_date(month_start + 1, unit = 'month') - 1,
-             col = ifelse(between(month_start, input$daterange[1], input$daterange[2]) | between(month_end, input$daterange[1], input$daterange[2]), '#FF9C71', '#FFCBB5'))
-    
-    highchart() %>% 
-      hc_chart(type = "column") %>% 
-      hc_title(text = "Water Production") %>% 
-      hc_xAxis(categories = util_d$month) %>% 
-      hc_add_series(name = "2014", data =  util_d_2014$values, colorByPoint = TRUE, color = "717CFF", colors = util_d_2014$col, animation = FALSE) %>%
-      hc_add_series(name = "2015", data =  util_d_2015$values, colorByPoint = TRUE, colors = util_d_2015$col, animation = FALSE) %>% 
-      hc_add_series(name = "2016", data =  util_d_2016$values, colorByPoint = TRUE, colors = util_d_2016$col, animation = FALSE) %>% 
-      #hc_colors(c('#717CFF','#69B245','#FF9C71')) %>% 
-      hc_tooltip(crosshairs = TRUE, shared = TRUE) %>% 
-      hc_credits(enabled = TRUE, text = "Source: State Water Board",
-                 href = "http://www.waterboards.ca.gov/water_issues/programs/conservation_portal/conservation_reporting.shtml") %>% 
-      hc_exporting(enabled = TRUE)
+    isolate({
+      # data
+      util_d <- util_data() %>%
+        mutate(month = month(date, label = TRUE),
+               month_start = floor_date(date, 'month'),
+               month_end = ceiling_date(date, unit = 'month') - 1,
+               year = year(date),
+               selected = between(month_start, input$daterange[1], input$daterange[2]) | between(month_end, input$daterange[1], input$daterange[2]),
+               selected = ifelse(is.na(selected), FALSE, selected)) %>% 
+        filter(selected) %>% 
+        select(year, month, month_start, month_end, TotMonthlyH20ProdCurrent, selected) %>%
+        split(.$year) %>% 
+        map(~ right_join(., data.frame(month = factor(month.abb, levels = month.abb, ordered = TRUE)), by = 'month'))
+      
+      util_d_2013 <- util_data() %>%
+        mutate(month = month(date, label = TRUE)) %>% 
+        select(month, TotMonthlyH20Prod2013) %>% 
+        distinct() %>% 
+        right_join(data.frame(month = factor(month.abb, levels = month.abb, ordered = TRUE)), by = 'month')
+      
+      hc <- highchart() %>% 
+        hc_chart(type = "column") %>% 
+        hc_title(text = "Water Production") %>% 
+        hc_xAxis(categories = month.abb) %>% 
+        hc_add_series(name = '2013', data =  util_d_2013$TotMonthlyH20Prod2013, color = '#000000', animation = (vals$last_util != util())) %>% 
+        hc_tooltip(crosshairs = TRUE, shared = TRUE) %>% 
+        hc_credits(enabled = TRUE, text = "Source: State Water Board",
+                   href = "http://www.waterboards.ca.gov/water_issues/programs/conservation_portal/conservation_reporting.shtml") %>% 
+        hc_exporting(enabled = TRUE) %>% 
+        hc_plotOptions(column = list(pointPadding = 0))
+      
+      series_colors <- c('#717CFF','#69B245') # '#FF9C71'
+      for (i in 1:length(util_d)) {
+        #cols <- substr(ifelse(util_d[[i]]$selected, series_colors[i], adjustcolor(series_colors[i], red.f = 2, green.f = 2, blue.f = 2)), 1, 7)
+        hc <- hc %>% hc_add_series(name = names(util_d)[i], data =  util_d[[i]]$TotMonthlyH20ProdCurrent,
+                                   color = series_colors[i], animation = (vals$last_util != util()))
+      }
+      
+      hc
+    })
   })
   
   # return (reactive function with) selected utility data --------------------
