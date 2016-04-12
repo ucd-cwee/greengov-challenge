@@ -82,9 +82,17 @@ waterConservation <- function(input, output, session,
   # Map --------------------------------------------------------------------
   # render complete map
   output$map <- renderLeaflet({
+    
+    #colorBin("Spectral", domain = c(0,6))(0:5)
+    pal <- colorBin(rev(c("#A50026","#F46D43","#FEE090","#E0F3F8","#74ADD1","#313695")), domain = map_data$sav_diff, bins = c(-0.3,-0.2,-0.1,0,0.1,0.2,0.3))
+    
     leaflet(map_data) %>%
       addProviderTiles("CartoDB.Positron", group = "Grayscale") %>% 
-      addPolygons(layerId = ~PWSID_1)
+      addPolygons(layerId = ~PWSID_1, color = '#444', weight = 1,
+                  fillColor = ~pal(sav_diff), fillOpacity = 0.7) %>%
+      addLegend("bottomleft", pal = pal, values = ~sav_diff,
+                title = "Missed Conservation Standard by",
+                opacity = 1, labFormat = labelFormat(prefix = '(', suffix = ')%', between = ', ', transform = function(x) 100 * x))
   })
   
   # update selected utility in UI menu
@@ -96,20 +104,23 @@ waterConservation <- function(input, output, session,
   
   # update selected polygon on map
   observeEvent(util(), {
+    
     ns <- session$ns
     last_selectedPoly <- map_data[map_data@data[,id_field] == vals$last_util,]
     selectedPoly <- map_data[map_data@data[,id_field] == util(),]
     b <- selectedPoly@bbox
+    pal <- colorBin(rev(c("#A50026","#F46D43","#FEE090","#E0F3F8","#74ADD1","#313695")), domain = map_data$sav_diff, bins = c(-0.3,-0.2,-0.1,0,0.1,0.2,0.3))
     
     leafletProxy(ns('map')) %>% 
-      addPolygons(data = last_selectedPoly, layerId = ~PWSID_1, color = "#03F") %>% 
-      addPolygons(data = selectedPoly, layerId = ~PWSID_1, color = "#000")
+      addPolygons(data = last_selectedPoly, layerId = ~PWSID_1, color = '#444', weight = 1,
+                  fillColor = ~pal(sav_diff), fillOpacity = 0.7) %>% 
+      addPolygons(data = selectedPoly, layerId = ~PWSID_1, color = '#000', weight = 2,
+                  fillColor = ~pal(sav_diff), fillOpacity = 0.7)
     vals$last_util <- util()
     
-    if (vals$from_menu) {
-      leafletProxy(ns('map')) %>% fitBounds(b['x','min'], b['y','min'],b['x','max'], b['y','max'])
-      vals$from_menu <- TRUE
-    }
+    if (vals$from_menu) { leafletProxy(ns('map')) %>% fitBounds(b['x','min'], b['y','min'],b['x','max'], b['y','max']) }
+    vals$from_menu <- TRUE
+    
   }, priority = -1)
   
   

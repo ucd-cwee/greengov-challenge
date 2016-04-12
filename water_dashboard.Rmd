@@ -2,6 +2,7 @@
 title: "Water Data"
 output:
   flexdashboard::flex_dashboard:
+    orientation: rows
     social: menu
     source_code: https://github.com/ucd-cwee/greengov-challenge
 runtime: shiny
@@ -38,16 +39,7 @@ div(style = "margin: 0px 5px", waterConservationInput2('water_districts'))
 Conservation
 =======================================================================
 
-Column {data-width=650}
------------------------------------------------------------------------
-
-### {.nopadding}
-
-```{r}
-waterConservationOutput1('water_districts')
-```
-
-Column {data-width=350}
+Row
 -----------------------------------------------------------------------
 
 ### Water Savings {.value-box}
@@ -55,9 +47,29 @@ Column {data-width=350}
 ```{r}
 # water savings
 renderValueBox({
-  util_data <- util()
-  prop_change <- mean((util_data %>% filter(selected) %>% .$proportionChange), na.rm = TRUE)
-  sprintf('%.1f%%', prop_change * 100)
+  util_data <- util() %>% 
+      filter(selected) %>% 
+      summarise(proportionChangeGoal = mean(proportionChangeGoal),
+                gal_2013 = sum(TotMonthlyH20Prod2013),
+                gal_cur = sum(TotMonthlyH20ProdCurrent)) %>% 
+      mutate(prop_change = (gal_2013 - gal_cur) / gal_2013)
+    sprintf('%.1f%% (goal: %.f%%)', util_data$prop_change * 100, util_data$proportionChangeGoal * 100)
+})
+```
+
+### Missed Conservation Standard by {.value-box}
+
+```{r}
+# Missed Conservation Standard by
+renderValueBox({
+  util_data <- util() %>% 
+      filter(selected) %>% 
+      summarise(proportionChangeGoal = mean(proportionChangeGoal),
+                gal_2013 = sum(TotMonthlyH20Prod2013),
+                gal_cur = sum(TotMonthlyH20ProdCurrent)) %>% 
+      mutate(prop_change = (gal_2013 - gal_cur) / gal_2013,
+             sav_diff = proportionChangeGoal - prop_change)
+    sprintf('%.1f%%', util_data$sav_diff * 100)
 })
 ```
 
@@ -74,17 +86,19 @@ renderValueBox({
 })
 ```
 
+Row
+-----------------------------------------------------------------------
 
 ### {.nopadding}
 
 ```{r}
-waterConservationOutput2('water_districts')
+waterConservationOutput1('water_districts')
 ```
 
 ### {.nopadding}
 
 ```{r}
-
+waterConservationOutput2('water_districts')
 ```
 
 

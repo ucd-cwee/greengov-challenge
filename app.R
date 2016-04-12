@@ -31,6 +31,7 @@ ui <- shinyUI(fluidPage(
         waterConservationOutput1('water_districts'),
         waterConservationOutput2('water_districts'),
         textOutput('savings'),
+        textOutput('vs_std'),
         textOutput('ghg')
       )
    )
@@ -44,10 +45,22 @@ server <- shinyServer(function(input, output, session) {
   output$savings <- reactive({
     util_data <- util() %>% 
       filter(selected) %>% 
-      summarise(gal_2013 = sum(TotMonthlyH20Prod2013),
+      summarise(proportionChangeGoal = mean(proportionChangeGoal),
+                gal_2013 = sum(TotMonthlyH20Prod2013),
                 gal_cur = sum(TotMonthlyH20ProdCurrent)) %>% 
       mutate(prop_change = (gal_2013 - gal_cur) / gal_2013)
-    sprintf('%.1f%%', util_data$prop_change * 100)
+    sprintf('%.1f%% (goal: %.f%%)', util_data$prop_change * 100, util_data$proportionChangeGoal * 100)
+  })
+  
+  output$vs_std <- reactive({
+    util_data <- util() %>% 
+      filter(selected) %>% 
+      summarise(proportionChangeGoal = mean(proportionChangeGoal),
+                gal_2013 = sum(TotMonthlyH20Prod2013),
+                gal_cur = sum(TotMonthlyH20ProdCurrent)) %>% 
+      mutate(prop_change = (gal_2013 - gal_cur) / gal_2013,
+             sav_diff = proportionChangeGoal - prop_change)
+    sprintf('%.1f%%', util_data$sav_diff * 100)
   })
   
   output$ghg <- reactive({
