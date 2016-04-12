@@ -1,0 +1,9 @@
+name: greengov
+account: cwee
+server: shinyapps.io
+appId: 93780
+bundleId: 416907
+url: https://cwee.shinyapps.io/greengov/
+when: 1460444136.07241
+asMultiple: FALSE
+asStatic: FALSE
