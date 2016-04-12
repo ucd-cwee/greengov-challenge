@@ -87,9 +87,10 @@ waterConservation <- function(input, output, session,
     pal <- colorBin(rev(c("#A50026","#F46D43","#FEE090","#E0F3F8","#74ADD1","#313695")), domain = map_data$sav_diff, bins = c(-0.3,-0.2,-0.1,0,0.1,0.2,0.3))
     
     leaflet(map_data) %>%
-      addProviderTiles("CartoDB.Positron", group = "Grayscale") %>% 
+      addProviderTiles("CartoDB.PositronNoLabels") %>% 
       addPolygons(layerId = ~PWSID_1, color = '#444', weight = 1,
-                  fillColor = ~pal(sav_diff), fillOpacity = 0.7) %>%
+                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWSNAME_1) %>%
+      addProviderTiles("Stamen.TonerLabels") %>%
       addLegend("bottomleft", pal = pal, values = ~sav_diff,
                 title = "Missed Conservation Standard by",
                 opacity = 1, labFormat = labelFormat(prefix = '(', suffix = ')%', between = ', ', transform = function(x) 100 * x))
@@ -111,11 +112,15 @@ waterConservation <- function(input, output, session,
     b <- selectedPoly@bbox
     pal <- colorBin(rev(c("#A50026","#F46D43","#FEE090","#E0F3F8","#74ADD1","#313695")), domain = map_data$sav_diff, bins = c(-0.3,-0.2,-0.1,0,0.1,0.2,0.3))
     
-    leafletProxy(ns('map')) %>% 
+    if (!is.null(vals$last_util)) {
+      leafletProxy(ns('map')) %>% 
       addPolygons(data = last_selectedPoly, layerId = ~PWSID_1, color = '#444', weight = 1,
-                  fillColor = ~pal(sav_diff), fillOpacity = 0.7) %>% 
+                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWSNAME_1)
+    }
+    
+    leafletProxy(ns('map')) %>% 
       addPolygons(data = selectedPoly, layerId = ~PWSID_1, color = '#000', weight = 2,
-                  fillColor = ~pal(sav_diff), fillOpacity = 0.7)
+                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWSNAME_1)
     vals$last_util <- util()
     
     if (vals$from_menu) { leafletProxy(ns('map')) %>% fitBounds(b['x','min'], b['y','min'],b['x','max'], b['y','max']) }
