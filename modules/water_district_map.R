@@ -186,11 +186,12 @@ waterConservation <- function(input, output, session,
         hc_exporting(enabled = TRUE) %>% 
         hc_plotOptions(column = list(pointPadding = 0))
       
-      series_colors <- c('#717CFF','#69B245') # '#FF9C71'
-      for (i in 1:length(util_d)) {
-        #cols <- substr(ifelse(util_d[[i]]$selected, series_colors[i], adjustcolor(series_colors[i], red.f = 2, green.f = 2, blue.f = 2)), 1, 7)
-        hc <- hc %>% hc_add_series(name = names(util_d)[i], data =  util_d[[i]]$gal_cur / 1e6,
-                                   color = series_colors[i], animation = (vals$last_util != util()))
+      years <- c('2015','2016')
+      series_colors <- c(`2015` = '#717CFF', `2016` = '#69B245') # '#FF9C71'
+      for (yr in years) {
+        #cols <- substr(ifelse(util_d[[yr]]$selected, series_colors[yr], adjustcolor(series_colors[yr], red.f = 2, green.f = 2, blue.f = 2)), 1, 7)
+        hc <- hc %>% hc_add_series(name = yr, data =  util_d[[yr]]$gal_cur / 1e6,
+                                   color = unname(series_colors[yr]), animation = (vals$last_util != util()))
       }
       
       hc
