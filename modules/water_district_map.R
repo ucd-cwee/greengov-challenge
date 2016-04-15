@@ -47,13 +47,13 @@ waterConservationOutput2 <- function(id) {
 
 # module server function
 waterConservation <- function(input, output, session,
-                              map_data, water_data, id_field, name_field) {
+                              water_summary, water_monthly, map_data, id_field, name_field) {
   
   vals <- reactiveValues(last_util = NULL, from_menu = TRUE)
   
   # all utilities
-  allUtil_df <- unique(water_data[,c(id_field, name_field)])
-  allUtil <- setNames(allUtil_df$PWSID_1, allUtil_df$Supplier_Name)
+  allUtil_df <- unique(water_summary[,c(id_field, name_field)])
+  allUtil <- setNames(allUtil_df[[id_field]], allUtil_df[[name_field]])
   
   # update UI control
   output$utility <- renderUI({
@@ -69,7 +69,7 @@ waterConservation <- function(input, output, session,
   
   # selected utility data
   util_data <- reactive({
-    water_data[water_data[,id_field] == util(),]
+    water_monthly[water_monthly[,id_field] == util(),]
   })
   
   # update UI control
@@ -88,8 +88,8 @@ waterConservation <- function(input, output, session,
     
     leaflet(map_data) %>%
       addProviderTiles("CartoDB.PositronNoLabels") %>% 
-      addPolygons(layerId = ~PWSID_1, color = '#444', weight = 1,
-                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWSNAME_1) %>%
+      addPolygons(layerId = ~PWS_ID, color = '#444', weight = 1,
+                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo) %>%
       addProviderTiles("Stamen.TonerLabels") %>%
       addLegend("bottomleft", pal = pal, values = ~sav_diff,
                 title = "Missed Conservation Standard by",
@@ -121,13 +121,13 @@ waterConservation <- function(input, output, session,
     
     if (!is.null(vals$last_util)) {
       leafletProxy(ns('map')) %>% 
-      addPolygons(data = last_selectedPoly, layerId = ~PWSID_1, color = '#444', weight = 1,
-                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWSNAME_1)
+      addPolygons(data = last_selectedPoly, layerId = ~PWS_ID, color = '#444', weight = 1,
+                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
     }
     
     leafletProxy(ns('map')) %>% 
-      addPolygons(data = selectedPoly, layerId = ~PWSID_1, color = '#000', weight = 2,
-                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWSNAME_1)
+      addPolygons(data = selectedPoly, layerId = ~PWS_ID, color = '#000', weight = 2,
+                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
     vals$last_util <- util()
     
     if (vals$from_menu) { leafletProxy(ns('map')) %>% fitBounds(b['x','min'], b['y','min'],b['x','max'], b['y','max']) }
@@ -153,13 +153,13 @@ waterConservation <- function(input, output, session,
                selected = between(month_start, input$daterange[1], input$daterange[2]) | between(month_end, input$daterange[1], input$daterange[2]),
                selected = ifelse(is.na(selected), FALSE, selected)) %>% 
         filter(selected) %>% 
-        select(year, month, month_start, month_end, TotMonthlyH20ProdCurrent, selected) %>%
+        select(year, month, month_start, month_end, gal_cur, selected) %>%
         split(.$year) %>% 
         map(~ right_join(., data.frame(month = factor(month.abb, levels = month.abb, ordered = TRUE)), by = 'month'))
       
       util_d_2013 <- util_data() %>%
         mutate(month = month(date, label = TRUE)) %>% 
-        select(month, TotMonthlyH20Prod2013) %>% 
+        select(month, gal_2013) %>% 
         distinct() %>% 
         right_join(data.frame(month = factor(month.abb, levels = month.abb, ordered = TRUE)), by = 'month')
       
@@ -168,7 +168,7 @@ waterConservation <- function(input, output, session,
         hc_title(text = "Water Production") %>% 
         hc_xAxis(categories = month.abb) %>% 
         hc_yAxis(title = list(text = "Million Gallons")) %>% 
-        hc_add_series(name = '2013', data =  util_d_2013$TotMonthlyH20Prod2013 / 1e6, color = '#000000', animation = (vals$last_util != util())) %>% 
+        hc_add_series(name = '2013', data =  util_d_2013$gal_2013 / 1e6, color = '#000000', animation = (vals$last_util != util())) %>% 
         hc_tooltip(crosshairs = TRUE, shared = TRUE,
                    formatter = JS("function () {
                                     var s = '<b>' + this.x + '</b>';
@@ -189,7 +189,7 @@ waterConservation <- function(input, output, session,
       series_colors <- c('#717CFF','#69B245') # '#FF9C71'
       for (i in 1:length(util_d)) {
         #cols <- substr(ifelse(util_d[[i]]$selected, series_colors[i], adjustcolor(series_colors[i], red.f = 2, green.f = 2, blue.f = 2)), 1, 7)
-        hc <- hc %>% hc_add_series(name = names(util_d)[i], data =  util_d[[i]]$TotMonthlyH20ProdCurrent / 1e6,
+        hc <- hc %>% hc_add_series(name = names(util_d)[i], data =  util_d[[i]]$gal_cur / 1e6,
                                    color = series_colors[i], animation = (vals$last_util != util()))
       }
       

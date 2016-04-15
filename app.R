@@ -3,11 +3,10 @@ library(shiny)
 library(flexdashboard)
 library(rgdal)
 
-# water district boundary
-water_dist <- readRDS('data/water_dist.rds')
-
-# water use summary
-water_use <- readRDS('data/water_use.rds')
+# load data
+util_summary <- readRDS('data/util_summary.rds')
+water_byMonth <- readRDS('data/water_byMonth.rds')
+water_districts <- readRDS('data/water_districts.rds')
 
 # load modules
 source('modules/water_district_map.R')
@@ -32,6 +31,7 @@ ui <- shinyUI(fluidPage(
         waterConservationOutput2('water_districts'),
         textOutput('savings'),
         textOutput('vs_std'),
+        textOutput('ei'),
         textOutput('ghg')
       )
    )
@@ -39,36 +39,42 @@ ui <- shinyUI(fluidPage(
 
 
 server <- shinyServer(function(input, output, session) {
-  util <- callModule(waterConservation, "water_districts", map_data = water_dist,
-                     water_data = water_use, id_field = 'PWSID_1', name_field = 'Supplier_Name')
+  util <- callModule(waterConservation, "water_districts", water_summary = util_summary,
+                     water_monthly = water_byMonth, map_data = water_districts,
+                     id_field = 'PWS_ID', name_field = 'PWS_name')
+  
+  savings <- reactive({
+    util() %>%
+      filter(selected) %>%
+      mutate(change_1000m3 = (gal_2013 - gal_cur) / 264172.052) %>% 
+      group_by(PWS_ID) %>% 
+      summarise(proportionChangeGoal = mean(proportionChangeGoal),
+                gal_2013 = sum(gal_2013),
+                gal_cur = sum(gal_cur)
+                ) %>% 
+      mutate(change_gal = gal_2013 - gal_cur,
+             change_prop = change_gal / gal_2013,
+             sav_diff = proportionChangeGoal - change_prop,
+             change_1000m3 = change_gal / 264172.052,
+             kWh_saved = change_1000m3 * util_summary$ei_kWh_1000m3[match(PWS_ID, util_summary$PWS_ID)],
+             MWh_saved = kWh_saved / 1e3,
+             kg_CO2e_saved = MWh_saved * util_summary$ghgFactor_kg_MWh[match(PWS_ID, util_summary$PWS_ID)])
+  })
   
   output$savings <- reactive({
-    util_data <- util() %>% 
-      filter(selected) %>% 
-      summarise(proportionChangeGoal = mean(proportionChangeGoal),
-                gal_2013 = sum(TotMonthlyH20Prod2013),
-                gal_cur = sum(TotMonthlyH20ProdCurrent)) %>% 
-      mutate(prop_change = (gal_2013 - gal_cur) / gal_2013)
-    sprintf('%.1f%% (goal: %.f%%)', util_data$prop_change * 100, util_data$proportionChangeGoal * 100)
+    sprintf('%.1f%% (goal: %.f%%)', savings()$change_prop * 100, savings()$proportionChangeGoal * 100)
   })
   
   output$vs_std <- reactive({
-    util_data <- util() %>% 
-      filter(selected) %>% 
-      summarise(proportionChangeGoal = mean(proportionChangeGoal),
-                gal_2013 = sum(TotMonthlyH20Prod2013),
-                gal_cur = sum(TotMonthlyH20ProdCurrent)) %>% 
-      mutate(prop_change = (gal_2013 - gal_cur) / gal_2013,
-             sav_diff = proportionChangeGoal - prop_change)
-    sprintf('%.1f%%', util_data$sav_diff * 100)
+    sprintf('%.1f%%', savings()$sav_diff * 100)
+  })
+  
+  output$ei <- reactive({
+    paste(format(round(savings()$kWh_saved), big.mark=",", scientific=FALSE), 'kWh energy')
   })
   
   output$ghg <- reactive({
-    water_saved <- util() %>%
-      filter(selected) %>%
-      mutate(mg_change = (TotMonthlyH20Prod2013 - TotMonthlyH20ProdCurrent) / 1e6,
-             ton_co2_saved = mg_change * ghg_factor)
-    paste(format(round(sum(water_saved$ton_co2_saved, na.rm = TRUE)), big.mark=",", scientific=FALSE), 'tons CO2e')
+    paste(format(round(savings()$kg_CO2e_saved), big.mark=",", scientific=FALSE), 'kg CO2e')
   })
   
 })
