@@ -12,4 +12,5 @@
 # data directory
 /data
 
-/figures
+# images
+/www/images
