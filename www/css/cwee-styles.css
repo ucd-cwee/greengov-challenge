@@ -1,0 +1,28 @@
+
+body{
+  background-color: #f2f2f2;
+}
+
+.well {
+  border: none;
+  border-right: 1px solid #e2e2e2;;
+  border-radius: 0;
+  background-color: #dde7f1;
+}
+
+.navbar {
+  margin-bottom: 0;
+}
+
+.container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.main-panel {
+  padding-right: 0;
+}
+
+.summary-row{
+  min-height: 50px;
+}
