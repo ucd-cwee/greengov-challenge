@@ -75,7 +75,7 @@ waterConservation <- function(input, output, session,
   # update UI control
   output$daterange <- renderUI({
     ns <- session$ns
-    sliderInput(ns('daterange'), label = "Filter Date Range", min = as.Date('2015-6-1'), max = as.Date('2016-2-29'),
+    sliderInput(ns('daterange'), label = "Date Range", min = as.Date('2015-6-1'), max = as.Date('2016-2-29'),
                 value = c(as.Date('2015-6-1'), as.Date('2016-2-29')), timeFormat = "%b %Y")
   })
   
@@ -92,7 +92,7 @@ waterConservation <- function(input, output, session,
                   fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo) %>%
       addProviderTiles("Stamen.TonerLabels") %>%
       addLegend("bottomleft", pal = pal, values = ~sav_diff,
-                title = "Missed Conservation Standard by",
+                title = "Missed Target by",
                 opacity = 1, labFormat = labelFormat(prefix = '(', suffix = ')%', between = ', ', transform = function(x) 100 * x))
   })
   

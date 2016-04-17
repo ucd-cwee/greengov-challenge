@@ -31,7 +31,7 @@ function(input, output, session) {
     sprintf('%.1f%%', savings()$sav_diff * 100)
   })
   
-  output$ei <- reactive({
+  output$energy <- reactive({
     paste(format(round(savings()$kWh_saved), big.mark=",", scientific=FALSE), 'kWh energy')
   })
   

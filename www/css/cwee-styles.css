@@ -2,13 +2,13 @@
 html, body { width: 100%; height: 100%; overflow-x: hidden;}
 
 body {
-  padding: 0px; margin: 0;
+  padding: 0; margin: 0;
   background-color: #f2f2f2;
 }
 
 .well {
   border: none;
-  border-right: 1px solid #e2e2e2;;
+  border-right: 1px solid #e2e2e2;
   border-radius: 0;
   background-color: #dde7f1;
 }
@@ -17,9 +17,13 @@ body {
   margin-bottom: 0;
 }
 
+.navbar-right{
+  margin-right: 0;
+}
+
 .container-fluid {
   padding-left: 0;
-  padding-right: 0;
+  padding-right: 15px;
 }
 
 .main-panel {
@@ -27,11 +31,11 @@ body {
 }
 
 .summary-row {
-  min-height: 50px;
+  min-height: 60px;
 }
 
 .container-fluid {
-  height: calc(100% - 101px);
+  height: calc(100% - 121px);
 }
 
 .fullheight {
@@ -44,4 +48,75 @@ body {
 
 #water_districts-usage_chart {
   height: 100% !important;
+}
+
+
+/* infobox */
+
+.infobox-outer{
+  padding: 5px;
+}
+
+.infobox-inner{
+  color: #fff;
+  background-color: #63a2e7;
+  min-height: 60px;
+  padding: 5px;
+  border-radius: 2px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.infobox-inner > .value {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 0 0 3px 0;
+  white-space: nowrap;
+  padding: 0;
+}
+
+.infobox-inner > .caption {
+  font-size: 14px;
+}
+
+
+/* main outputs */
+
+.main-output-col {
+  padding: 0;
+}
+
+.main-output-wrapper {
+  padding: 5px;
+  overflow: hidden;
+}
+
+.main-output-wrapper {
+  padding: 5px;
+}
+
+#water_districts-map {
+  border-radius: 2px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+#water_districts-usage_chart {
+  border-radius: 2px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+/* state-btn */
+
+#state-btn {
+  margin-bottom: 15px;
+}
+
+#state-btn > .btn {
+  padding: 6px 12px;
+}
+
+.pseudo-hide{
+  position: absolute;
+  visibility: hidden;
 }

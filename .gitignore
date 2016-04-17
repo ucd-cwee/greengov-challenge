@@ -6,8 +6,8 @@
 .Rprofile
 .Renviron
 
-# rendered html files
-*.html
+# rendered html file
+water_dashboard.html
 
 # data directory
 /data

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Shiny dependencies -->
+    {{ headContent() }}
+    
+    <!-- Bootstrap -->
+    {{ bootstrapLib() }}
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom styles for this project -->
+    <link href="css/cwee-styles.css" rel="stylesheet">
+    
+    <script>
+      function show_statewide(e) {
+        $(e).addClass("active").siblings().removeClass("active");
+        $("#water_districts-utility").parent().addClass('pseudo-hide');
+        $("#map-col").addClass('hidden');
+        $("#chart-col").removeClass('col-sm-6').addClass('col-sm-12');
+        $(window).trigger('resize');
+      }
+      function show_utility(e) {
+        $(e).addClass("active").siblings().removeClass("active");
+        $("#water_districts-utility").parent().removeClass('pseudo-hide');
+        $("#map-col").removeClass('hidden pseudo-hide');
+        $("#chart-col").removeClass('col-sm-12').addClass('col-sm-6');
+        $(window).trigger('resize');
+      }
+    </script>
+    
+  </head>
+
+  <body>
+
+    <!-- navbar -->
+    <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+      <div class="navbar-header">
+        <span class="navbar-brand">California Water Data</span>
+      </div>
+      <ul class="nav navbar-nav navbar-left">
+        <li class="active">
+          <a href="#tab-1" data-toggle="tab" data-value="Conservation">Conservation</a>
+        </li>
+        <li>
+          <a href="#tab-2" data-toggle="tab" data-value="Quality">Water Quality</a>
+        </li>
+        <li>
+          <a href="#tab-3" data-toggle="tab" data-value="Methods">Methods</a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://github.com/ucd-cwee/greengov-challenge">
+          <span class="fa fa-github" style="margin-right: 7px;"></span>Source Code
+        </a></li>
+      </ul>
+    </nav>
+    
+    <div class="container-fluid">
+      
+      <div class="row fullheight">
+        
+        <!-- main control panel -->
+        <div class="col-sm-3 main-panel">
+          <form class="well">
+            <div id='state-btn' class="btn-group" role="group">
+              <button onclick="show_statewide(this);" class="btn btn-primary active" autofocus='true'>Statewide</button>
+              <button onclick="show_utility(this);" class="btn btn-primary">Water utility</button>
+            </div>
+            <span class="pseudo-hide">{{ waterConservationInput1('water_districts') }}</span>
+            <span>{{ waterConservationInput2('water_districts') }}</span>
+          </form>
+          <a href="http://cwee.ucdavis.edu/" target="_blank">
+            <img style="width:100%;" src="images/CWEE-mark2013.png" alt="UC Davis Center for Water-Energy Efficiency">
+          </a>
+        </div>
+        
+        <!-- content tabs -->
+        <div class="col-sm-9 fullheight">
+          <div class="tab-content fullheight">
+          
+            <!-- Conservation Tab -->
+            <div class="tab-pane active fullheight" data-value="Conservation" id="tab-1">
+              <div class="row summary-row">
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
+                  <div class="value">{{ textOutput('savings') }}</div>
+                  <div class="caption">Savings</div>
+                </div></div>
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
+                  <div class="value">{{ textOutput('vs_std') }}</div>
+                  <div class="caption">Vs target</div>
+                </div></div>
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
+                  <div class="value">{{ textOutput('energy') }}</div>
+                  <div class="caption">Energy Savings</div>
+                </div></div>
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
+                  <div class="value">{{ textOutput('ghg') }}</div>
+                  <div class="caption">GHG Savings</div>
+                </div></div>
+              </div>
+              <div class="row fullheight">
+                <div id = "map-col" class="col-sm-6 fullheight main-output-col pseudo-hide">
+                  <div class="main-output-wrapper fullheight">
+                    {{ waterConservationOutput1('water_districts') }}
+                  </div>
+                </div>
+                <div id = "chart-col"  class="col-sm-12 fullheight main-output-col">
+                  <div class="main-output-wrapper fullheight">
+                    {{ waterConservationOutput2('water_districts') }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Water Quality Tab -->
+            <div class="tab-pane" data-value="Quality" id="tab-2">
+              <div class="row">
+                <div class="col-sm-12">
+                  <p class="lead">Placeholder for water quality data...</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Methods Tab -->
+            <div class="tab-pane" data-value="Methods" id="tab-3">
+              <div class="row">
+                <div class="col-sm-12">
+                  <p class="lead">Placeholder for methods...</p>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </body>
+</html>
