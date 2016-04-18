@@ -47,9 +47,9 @@ waterConservationOutput2 <- function(id) {
 
 # module server function
 waterConservation <- function(input, output, session,
-                              water_summary, water_monthly, map_data, id_field, name_field) {
+                              water_summary, water_monthly, map_data, id_field, name_field, statewide) {
   
-  vals <- reactiveValues(last_util = NULL, from_menu = TRUE)
+  vals <- reactiveValues(last_util = '', from_menu = TRUE, still_statewide = FALSE)
   
   # all utilities
   allUtil_df <- unique(water_summary[,c(id_field, name_field)])
@@ -64,12 +64,17 @@ waterConservation <- function(input, output, session,
   # selected utility
   util <- reactive({
     validate(need(input$utility, message = FALSE))
-    input$utility
+    if (statewide()) return('statewide') else return(input$utility)
   })
   
   # selected utility data
   util_data <- reactive({
-    water_monthly[water_monthly[,id_field] == util(),]
+    selected_util = util()
+    if (selected_util == 'statewide') {
+      return(water_monthly)
+    } else {
+      return(water_monthly[water_monthly[,id_field] == selected_util,])
+    }
   })
   
   # update UI control
@@ -113,25 +118,31 @@ waterConservation <- function(input, output, session,
   # update selected polygon on map
   observeEvent(util(), {
     
-    ns <- session$ns
-    last_selectedPoly <- map_data[map_data@data[,id_field] == vals$last_util,]
-    selectedPoly <- map_data[map_data@data[,id_field] == util(),]
-    b <- selectedPoly@bbox
-    pal <- colorBin(rev(c("#A50026","#F46D43","#FEE090","#E0F3F8","#74ADD1","#313695")), domain = map_data$sav_diff, bins = c(-0.3,-0.2,-0.1,0,0.1,0.2,0.3))
-    
-    if (!is.null(vals$last_util)) {
+    selected_util <- util()
+    if (selected_util != 'statewide') {
+      ns <- session$ns
+      pal <- colorBin(rev(c("#A50026","#F46D43","#FEE090","#E0F3F8","#74ADD1","#313695")), domain = map_data$sav_diff, bins = c(-0.3,-0.2,-0.1,0,0.1,0.2,0.3))
+      
+      # update last poly
+      if (vals$last_util != '') {
+        last_selectedPoly <- map_data[map_data@data[,id_field] == vals$last_util,]
+        leafletProxy(ns('map')) %>% 
+        addPolygons(data = last_selectedPoly, layerId = ~PWS_ID, color = '#444', weight = 1,
+                    fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
+      }
+      
+      # update selected poly
+      selectedPoly <- map_data[map_data@data[,id_field] == selected_util,]
+      b <- selectedPoly@bbox
       leafletProxy(ns('map')) %>% 
-      addPolygons(data = last_selectedPoly, layerId = ~PWS_ID, color = '#444', weight = 1,
-                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
+        addPolygons(data = selectedPoly, layerId = ~PWS_ID, color = '#000', weight = 2,
+                    fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
+      vals$last_util <- selected_util
+      
+      # if util was selected from menu, then update map view
+      if (vals$from_menu) { leafletProxy(ns('map')) %>% fitBounds(b['x','min'], b['y','min'],b['x','max'], b['y','max']) }
+      vals$from_menu <- TRUE
     }
-    
-    leafletProxy(ns('map')) %>% 
-      addPolygons(data = selectedPoly, layerId = ~PWS_ID, color = '#000', weight = 2,
-                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
-    vals$last_util <- util()
-    
-    if (vals$from_menu) { leafletProxy(ns('map')) %>% fitBounds(b['x','min'], b['y','min'],b['x','max'], b['y','max']) }
-    vals$from_menu <- TRUE
     
   }, priority = -1)
   
@@ -146,11 +157,14 @@ waterConservation <- function(input, output, session,
     isolate({
       # data
       util_d <- util_data() %>%
-        mutate(month = month(date, label = TRUE),
+        mutate(year = year(date),
+               month = month(date, label = TRUE),
                month_start = floor_date(date, 'month'),
-               month_end = ceiling_date(date, unit = 'month') - 1,
-               year = year(date),
-               selected = between(month_start, input$daterange[1], input$daterange[2]) | between(month_end, input$daterange[1], input$daterange[2]),
+               month_end = ceiling_date(date, unit = 'month') - 1) %>% 
+        group_by(year, month, month_start, month_end) %>% 
+        summarise(gal_2013 = sum(gal_2013),
+                  gal_cur = sum(gal_cur)) %>% 
+        mutate(selected = between(month_start, input$daterange[1], input$daterange[2]) | between(month_end, input$daterange[1], input$daterange[2]),
                selected = ifelse(is.na(selected), FALSE, selected)) %>% 
         filter(selected) %>% 
         select(year, month, month_start, month_end, gal_cur, selected) %>%
@@ -159,16 +173,29 @@ waterConservation <- function(input, output, session,
       
       util_d_2013 <- util_data() %>%
         mutate(month = month(date, label = TRUE)) %>% 
+        group_by(month) %>% 
+        summarise(gal_2013 = sum(gal_2013)) %>% 
         select(month, gal_2013) %>% 
         distinct() %>% 
         right_join(data.frame(month = factor(month.abb, levels = month.abb, ordered = TRUE)), by = 'month')
       
+      # animate chart or not
+      animate <- TRUE
+      if (util() == 'statewide') {
+        if (vals$still_statewide | vals$last_util != '') { animate <- FALSE }
+        vals$still_statewide <- TRUE
+      } else {
+        if (vals$last_util == util()) { animate <- FALSE }
+        vals$still_statewide <- FALSE
+      }
+      
+      # build chart
       hc <- highchart() %>% 
         hc_chart(type = "column") %>% 
         hc_title(text = "Water Production") %>% 
         hc_xAxis(categories = month.abb) %>% 
         hc_yAxis(title = list(text = "Million Gallons")) %>% 
-        hc_add_series(name = '2013', data =  util_d_2013$gal_2013 / 1e6, color = '#000000', animation = (vals$last_util != util())) %>% 
+        hc_add_series(name = '2013', data =  util_d_2013$gal_2013 / 1e6, color = '#000000', animation = animate) %>% 
         hc_tooltip(crosshairs = TRUE, shared = TRUE,
                    formatter = JS("function () {
                                     var s = '<b>' + this.x + '</b>';
@@ -191,7 +218,7 @@ waterConservation <- function(input, output, session,
       for (yr in years) {
         #cols <- substr(ifelse(util_d[[yr]]$selected, series_colors[yr], adjustcolor(series_colors[yr], red.f = 2, green.f = 2, blue.f = 2)), 1, 7)
         hc <- hc %>% hc_add_series(name = yr, data =  util_d[[yr]]$gal_cur / 1e6,
-                                   color = unname(series_colors[yr]), animation = (vals$last_util != util()))
+                                   color = unname(series_colors[yr]), animation = animate)
       }
       
       hc

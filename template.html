@@ -12,7 +12,16 @@
     <link href="css/cwee-styles.css" rel="stylesheet">
     
     <script>
+      var statewide = (function () {
+          var counter = 0;
+          return function () {return counter += 1;}
+      })();
+      var by_utility = (function () {
+          var counter = 0;
+          return function () {return counter += 1;}
+      })();
       function show_statewide(e) {
+        Shiny.onInputChange("view_statewide", statewide());
         $(e).addClass("active").siblings().removeClass("active");
         $("#water_districts-utility").parent().addClass('pseudo-hide');
         $("#map-col").addClass('hidden');
@@ -20,6 +29,7 @@
         $(window).trigger('resize');
       }
       function show_utility(e) {
+        Shiny.onInputChange("view_utility", by_utility());
         $(e).addClass("active").siblings().removeClass("active");
         $("#water_districts-utility").parent().removeClass('pseudo-hide');
         $("#map-col").removeClass('hidden pseudo-hide');
