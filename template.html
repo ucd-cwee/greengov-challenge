@@ -12,6 +12,16 @@
     <link href="css/cwee-styles.css" rel="stylesheet">
     
     <script>
+      function nav_conservation(e) {
+        $("#water_districts-daterange").removeClass('hidden');
+        $("#state-btn-statewide").prop('disabled', false);
+      }
+      function nav_quality(e) {
+        $("#water_districts-daterange").addClass('hidden');
+        $("#state-btn-utility").click();
+        $("#state-btn-statewide").prop('disabled', true);
+      }
+      
       var statewide = (function () {
           var counter = 0;
           return function () {return counter += 1;}
@@ -25,7 +35,9 @@
         $(e).addClass("active").siblings().removeClass("active");
         $("#water_districts-utility").parent().addClass('pseudo-hide');
         $("#map-col").addClass('hidden');
-        $("#chart-col").removeClass('col-sm-6').addClass('col-sm-12');
+        $("#ghg-col").removeClass('hidden');
+        $("#main-wrapper").removeClass('main-wrapper2').addClass('main-wrapper1');
+        $("#state-summary-row").removeClass('hidden')
         $(window).trigger('resize');
       }
       function show_utility(e) {
@@ -33,7 +45,9 @@
         $(e).addClass("active").siblings().removeClass("active");
         $("#water_districts-utility").parent().removeClass('pseudo-hide');
         $("#map-col").removeClass('hidden pseudo-hide');
-        $("#chart-col").removeClass('col-sm-12').addClass('col-sm-6');
+        $("#ghg-col").addClass('hidden');
+        $("#main-wrapper").removeClass('main-wrapper1').addClass('main-wrapper2');
+        $("#state-summary-row").addClass('hidden')
         $(window).trigger('resize');
       }
     </script>
@@ -49,13 +63,13 @@
       </div>
       <ul class="nav navbar-nav navbar-left">
         <li class="active">
-          <a href="#tab-1" data-toggle="tab" data-value="Conservation">Conservation</a>
+          <a href="#tab-1" data-toggle="tab" data-value="Conservation" onclick="nav_conservation();">Conservation</a>
         </li>
         <li>
-          <a href="#tab-2" data-toggle="tab" data-value="Quality">Water Quality</a>
+          <a href="#tab-2" data-toggle="tab" data-value="Quality" onclick="nav_quality();">Water Quality</a>
         </li>
         <li>
-          <a href="#tab-3" data-toggle="tab" data-value="Methods">Methods</a>
+          <a href="#tab-3" data-toggle="tab" data-value="Info">Info</a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -65,7 +79,7 @@
       </ul>
     </nav>
     
-    <div class="container-fluid">
+    <div id = "main-wrapper" class="container-fluid main-wrapper1">
       
       <div class="row fullheight">
         
@@ -73,8 +87,8 @@
         <div class="col-sm-3 main-panel">
           <form class="well">
             <div id='state-btn' class="btn-group" role="group">
-              <button onclick="show_statewide(this);" class="btn btn-primary active" autofocus='true'>Statewide</button>
-              <button onclick="show_utility(this);" class="btn btn-primary">Water utility</button>
+              <button id='state-btn-statewide' onclick="show_statewide(this);" class="btn btn-primary active" autofocus='true'>Statewide</button>
+              <button id='state-btn-utility' onclick="show_utility(this);" class="btn btn-primary">Water utility</button>
             </div>
             <span class="pseudo-hide">{{ waterConservationInput1('water_districts') }}</span>
             <span>{{ waterConservationInput2('water_districts') }}</span>
@@ -90,33 +104,62 @@
           
             <!-- Conservation Tab -->
             <div class="tab-pane active fullheight" data-value="Conservation" id="tab-1">
+              <!-- summary row -->
               <div class="row summary-row">
                 <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
                   <div class="value">{{ textOutput('savings') }}</div>
-                  <div class="caption">Savings</div>
+                  <div class="caption">Water Savings</div>
                 </div></div>
                 <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
                   <div class="value">{{ textOutput('vs_std') }}</div>
+                  <div class="caption">{{ textOutput('vs_std_label') }}</div>
+                </div></div>
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner energy-info">
+                  <div class="value">{{ textOutput('energy') }}</div>
+                  <div class="caption">Resulting Energy Savings</div>
+                </div></div>
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner ghg-info">
+                  <div class="value">{{ textOutput('ghg') }}</div>
+                  <div class="caption">Resulting GHG Savings</div>
+                </div></div>
+              </div>
+              <!-- state summary row -->
+              <div id = "state-summary-row" class="row summary-row">
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner invisible">
+                  <div class="value">temp</div>
+                  <div class="caption">Savings</div>
+                </div></div>
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner invisible">
+                  <div class="value">temp</div>
                   <div class="caption">Vs target</div>
                 </div></div>
-                <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
-                  <div class="value">{{ textOutput('energy') }}</div>
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner energy-info">
+                  <div class="value">temp</div>
                   <div class="caption">Energy Savings</div>
                 </div></div>
-                <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
-                  <div class="value">{{ textOutput('ghg') }}</div>
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner ghg-info">
+                  <div class="value">temp</div>
                   <div class="caption">GHG Savings</div>
                 </div></div>
               </div>
+              <!-- main output row -->
               <div class="row fullheight">
+                <!-- bar chart -->
+                <div id = "chart-col"  class="col-sm-6 fullheight main-output-col">
+                  <div class="main-output-wrapper fullheight">
+                    {{ waterConservationOutput2('water_districts') }}
+                  </div>
+                </div>
+                <!-- ghg pie chart -->
+                <div id = "ghg-col" class="col-sm-6 fullheight main-output-col">
+                  <div class="main-output-wrapper fullheight">
+                    {{ highchartOutput('ghg_pie', height = '100%') }}
+                  </div>
+                </div>
+                <!-- map -->
                 <div id = "map-col" class="col-sm-6 fullheight main-output-col pseudo-hide">
                   <div class="main-output-wrapper fullheight">
                     {{ waterConservationOutput1('water_districts') }}
-                  </div>
-                </div>
-                <div id = "chart-col"  class="col-sm-12 fullheight main-output-col">
-                  <div class="main-output-wrapper fullheight">
-                    {{ waterConservationOutput2('water_districts') }}
                   </div>
                 </div>
               </div>
@@ -126,16 +169,19 @@
             <div class="tab-pane" data-value="Quality" id="tab-2">
               <div class="row">
                 <div class="col-sm-12">
-                  <p class="lead">Placeholder for water quality data...</p>
+                  <h2>Summary of Water Quality Testing</h2>
+                  {{ waterQualityOutput1('water_quality') }}
+                  <h2>Most Common Wastewater Violations</h2>
+                  {{ waterQualityOutput2('water_quality') }}
                 </div>
               </div>
             </div>
             
-            <!-- Methods Tab -->
-            <div class="tab-pane" data-value="Methods" id="tab-3">
+            <!-- Info Tab -->
+            <div class="tab-pane" data-value="Info" id="tab-3">
               <div class="row">
                 <div class="col-sm-12">
-                  <p class="lead">Placeholder for methods...</p>
+                  <p class="lead">Placeholder for additional info...</p>
                 </div>
               </div>
             </div>

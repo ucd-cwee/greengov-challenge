@@ -34,8 +34,16 @@ body {
   min-height: 60px;
 }
 
-.container-fluid {
-  height: calc(100% - 121px);
+#state-summary-row .infobox-outer {
+  padding-top: 2px;
+}
+
+.main-wrapper1 {
+  height: calc(100% - 196px);
+}
+
+.main-wrapper2 {
+  height: calc(100% - 126px);
 }
 
 .fullheight {
@@ -78,6 +86,13 @@ body {
   font-size: 14px;
 }
 
+.energy-info {
+  background-color: #BAA53C;
+}
+
+.ghg-info {
+  background-color: #B27B4F;
+}
 
 /* main outputs */
 
@@ -92,6 +107,12 @@ body {
 
 .main-output-wrapper {
   padding: 5px;
+}
+
+#ghg_pie {
+  border-radius: 2px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 #water_districts-map {

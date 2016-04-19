@@ -47,7 +47,7 @@ waterConservationOutput2 <- function(id) {
 
 # module server function
 waterConservation <- function(input, output, session,
-                              water_summary, water_monthly, map_data, id_field, name_field, statewide) {
+                              water_summary, water_monthly, statewide_monthly, map_data, id_field, name_field, statewide) {
   
   vals <- reactiveValues(last_util = '', from_menu = TRUE, still_statewide = FALSE)
   
@@ -71,10 +71,11 @@ waterConservation <- function(input, output, session,
   util_data <- reactive({
     selected_util = util()
     if (selected_util == 'statewide') {
-      return(water_monthly)
+      ret <- statewide_monthly
     } else {
-      return(water_monthly[water_monthly[,id_field] == selected_util,])
+      ret <- water_monthly[water_monthly[,id_field] == selected_util,]
     }
+    unique(ret[complete.cases(ret),])
   })
   
   # update UI control
@@ -126,17 +127,21 @@ waterConservation <- function(input, output, session,
       # update last poly
       if (vals$last_util != '') {
         last_selectedPoly <- map_data[map_data@data[,id_field] == vals$last_util,]
-        leafletProxy(ns('map')) %>% 
-        addPolygons(data = last_selectedPoly, layerId = ~PWS_ID, color = '#444', weight = 1,
-                    fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
+        if (nrow(last_selectedPoly) > 0) {
+          leafletProxy(ns('map')) %>% 
+          addPolygons(data = last_selectedPoly, layerId = ~PWS_ID, color = '#444', weight = 1,
+                      fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
+        }
       }
       
       # update selected poly
       selectedPoly <- map_data[map_data@data[,id_field] == selected_util,]
       b <- selectedPoly@bbox
-      leafletProxy(ns('map')) %>% 
-        addPolygons(data = selectedPoly, layerId = ~PWS_ID, color = '#000', weight = 2,
-                    fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
+      if (nrow(selectedPoly) > 0) {
+        leafletProxy(ns('map')) %>% 
+          addPolygons(data = selectedPoly, layerId = ~PWS_ID, color = '#000', weight = 2,
+                      fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
+      }
       vals$last_util <- selected_util
       
       # if util was selected from menu, then update map view
