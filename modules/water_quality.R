@@ -31,9 +31,9 @@ waterQuality <- function(input, output, session,
   
   output$quality_summary <- renderDataTable({
     dat <- quality_data[quality_data[[id_field]] == current_id(),] %>% 
-      mutate(average_value = round(average_value, 1)) %>% 
-      select(chemical, average_value, unit)
-    datatable(dat, filter = 'none', rownames = FALSE, colnames = c('Chemical', 'measured value', 'unit'),
+      mutate(perc_gt_RPHL = round(perc_gt_RPHL * 100, 1)) %>% 
+      select(chemical, perc_gt_RPHL, n_violations)
+    datatable(dat, filter = 'none', rownames = FALSE, colnames = c('Chemical', '% greater than RPH limit', '# violations'),
               style = 'bootstrap', selection = 'none', options = list(dom = 't', ordering = FALSE),
               class = 'table-condensed table-bordered table-striped table-hover')
   })

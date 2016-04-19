@@ -54,11 +54,12 @@ waterConservation <- function(input, output, session,
   # all utilities
   allUtil_df <- unique(water_summary[,c(id_field, name_field)])
   allUtil <- setNames(allUtil_df[[id_field]], allUtil_df[[name_field]])
+  allUtil_ord <- allUtil[order(names(allUtil))]
   
   # update UI control
   output$utility <- renderUI({
     ns <- session$ns
-    selectInput(ns("utility"), "Utility", choices = allUtil)
+    selectInput(ns("utility"), "Utility", choices = allUtil_ord)
   })
   
   # selected utility
@@ -233,7 +234,7 @@ waterConservation <- function(input, output, session,
   # return (reactive function with) selected utility data --------------------
   reactive({
     validate(need(input$daterange, message = FALSE))
-    util_data() %>% mutate(selected = between(floor_date(date), input$daterange[1], input$daterange[2]) | between(ceiling_date(date, unit = 'month') - 1, input$daterange[1], input$daterange[2]))
+    util_data() %>% mutate(selected = between(floor_date(date, unit = 'month'), input$daterange[1], input$daterange[2]) | between(ceiling_date(date, unit = 'month') - 1, input$daterange[1], input$daterange[2]))
   })
   
 }

@@ -34,15 +34,7 @@ body {
   min-height: 60px;
 }
 
-#state-summary-row .infobox-outer {
-  padding-top: 2px;
-}
-
-.main-wrapper1 {
-  height: calc(100% - 196px);
-}
-
-.main-wrapper2 {
+.main-wrapper {
   height: calc(100% - 126px);
 }
 
@@ -56,6 +48,10 @@ body {
 
 #water_districts-usage_chart {
   height: 100% !important;
+}
+
+#ghg-col{
+  height: calc(100% - 95px);
 }
 
 
@@ -109,7 +105,7 @@ body {
   padding: 5px;
 }
 
-#ghg_pie {
+#energy_barchart {
   border-radius: 2px;
   border: 1px solid #ddd;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);

@@ -17,15 +17,27 @@ function(input, output, session) {
              current_id = reactive(input$`water_districts-utility`))
   
   # output values
-  output$ghg_pie <- renderHighchart({
+  output$energy_barchart <- renderHighchart({
     highchart() %>% 
-      hc_chart(type = "pie") %>% 
-      hc_title(text = "CA GHG Emissions By Sector") %>% 
-      hc_series(list(name = "Sector",
-                     size = "70%",
-                     data = ghg_by_sector,
-                     dataLabels = list(distance = 10, formatter = JS("function () { return this.point.name + '<br/>' + this.y + '%'; }")))) %>% 
-      hc_tooltip(formatter = JS("function () { return this.point.name + '<br/>' + this.y + '%'; }"))
+      hc_chart(type = "column") %>% 
+      hc_title(text = "Electricity Savings from Statewide Water Conservation vs. Total Electricity Savings from Energy IOU Efficiency Programs<br/><b>(Jul - Sep 2015)</b>") %>% 
+      hc_xAxis(categories = c('Energy Efficiency Programs<br/>by End Use Category', 'Energy Savings Resulting<br>from Water Conservation')) %>% 
+      hc_yAxis(title = list(text = "GWh Energy Saved")) %>% 
+      hc_series(appliance_data,
+                foodservice_data,
+                hvac_data,
+                indoorlighting_data,
+                other_data,
+                outdoorlighting_data,
+                plugloads_data,
+                process_data,
+                refrigeration_data,
+                waterheating_data,
+                wholebuilding_data,
+                waterenergy_data) %>% 
+      hc_plotOptions(column = list(stacking = 'normal')) %>% 
+      #hc_legend(align = "left", verticalAlign = "top", layout = "vertical", x = 0, y = 100) %>% 
+      hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + this.y.toFixed(1) + ' GWh'; }"))
   })
   
   savings <- reactive({
@@ -71,7 +83,7 @@ function(input, output, session) {
   })
   
   output$vs_std_label <- reactive({
-    switch(as.character(sign(savings()$sav_diff)), '-1' = '(Short of Target)', '0' = '(Met Target)', '1' = '(Savings Exceeding Target)', 'Vs Target')
+    switch(as.character(sign(savings()$sav_diff)), '-1' = '(Missed Target)', '0' = '(Met Target)', '1' = '(Savings Exceeding Target)', 'Vs Target')
   })
   
   output$energy <- reactive({
@@ -80,6 +92,10 @@ function(input, output, session) {
   
   output$ghg <- reactive({
     paste(format(round(savings()$kg_CO2e_saved / 1000), big.mark=",", scientific=FALSE), 'MT CO2e')
+  })
+  
+  output$n_cars <- reactive({
+    format(round(savings()$kg_CO2e_saved * 2.20462 / 9737.44), big.mark=",", scientific=FALSE)
   })
   
 }
