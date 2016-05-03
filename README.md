@@ -1,7 +1,8 @@
 
 # greengov-challenge
-CWEE's entry into the 2016 CA Water Board Data Innovation Challenge.
+CWEE's entry into the [2016 CA Water Board Data Innovation Challenge](http://www.waterboards.ca.gov/resources/data_databases/data_innov_challenge.shtml).
 
-__Deadline: 5:00 pm on April 19__
+View the application here:
 
-Presentations on Friday, April 22, 2016 from 10:00 AM to 2:00 PM @ CalEPA in Sacramento
+[https://cwee.shinyapps.io/greengov/](https://cwee.shinyapps.io/greengov/)
+

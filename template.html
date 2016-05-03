@@ -12,6 +12,16 @@
     <link href="css/cwee-styles.css" rel="stylesheet">
     
     <script>
+      function nav_conservation(e) {
+        $("#water_districts-daterange").removeClass('hidden');
+        $("#state-btn-statewide").prop('disabled', false);
+      }
+      function nav_quality(e) {
+        $("#water_districts-daterange").addClass('hidden');
+        $("#state-btn-utility").click();
+        $("#state-btn-statewide").prop('disabled', true);
+      }
+      
       var statewide = (function () {
           var counter = 0;
           return function () {return counter += 1;}
@@ -25,7 +35,8 @@
         $(e).addClass("active").siblings().removeClass("active");
         $("#water_districts-utility").parent().addClass('pseudo-hide');
         $("#map-col").addClass('hidden');
-        $("#chart-col").removeClass('col-sm-6').addClass('col-sm-12');
+        $("#ghg-col").removeClass('hidden');
+        $("#ghg-cars-col").removeClass('pseudo-hide');
         $(window).trigger('resize');
       }
       function show_utility(e) {
@@ -33,7 +44,8 @@
         $(e).addClass("active").siblings().removeClass("active");
         $("#water_districts-utility").parent().removeClass('pseudo-hide');
         $("#map-col").removeClass('hidden pseudo-hide');
-        $("#chart-col").removeClass('col-sm-12').addClass('col-sm-6');
+        $("#ghg-col").addClass('hidden');
+        $("#ghg-cars-col").addClass('pseudo-hide');
         $(window).trigger('resize');
       }
     </script>
@@ -45,27 +57,27 @@
     <!-- navbar -->
     <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
       <div class="navbar-header">
-        <span class="navbar-brand">California Water Data</span>
+        <span class="navbar-brand">California H<sub>2</sub>Open</span>
       </div>
       <ul class="nav navbar-nav navbar-left">
         <li class="active">
-          <a href="#tab-1" data-toggle="tab" data-value="Conservation">Conservation</a>
+          <a href="#tab-1" data-toggle="tab" data-value="Conservation" onclick="nav_conservation();">Conservation</a>
         </li>
         <li>
-          <a href="#tab-2" data-toggle="tab" data-value="Quality">Water Quality</a>
+          <a href="#tab-2" data-toggle="tab" data-value="Quality" onclick="nav_quality();">Water Quality</a>
         </li>
         <li>
-          <a href="#tab-3" data-toggle="tab" data-value="Methods">Methods</a>
+          <a href="#tab-3" data-toggle="tab" data-value="Info">Info</a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="https://github.com/ucd-cwee/greengov-challenge">
+        <li><a href="https://github.com/ucd-cwee/greengov-challenge" target="_blank">
           <span class="fa fa-github" style="margin-right: 7px;"></span>Source Code
         </a></li>
       </ul>
     </nav>
     
-    <div class="container-fluid">
+    <div id = "main-wrapper" class="container-fluid main-wrapper">
       
       <div class="row fullheight">
         
@@ -73,8 +85,8 @@
         <div class="col-sm-3 main-panel">
           <form class="well">
             <div id='state-btn' class="btn-group" role="group">
-              <button onclick="show_statewide(this);" class="btn btn-primary active" autofocus='true'>Statewide</button>
-              <button onclick="show_utility(this);" class="btn btn-primary">Water utility</button>
+              <button id='state-btn-statewide' onclick="show_statewide(this);" class="btn btn-primary active" autofocus='true'>Statewide</button>
+              <button id='state-btn-utility' onclick="show_utility(this);" class="btn btn-primary">Water utility</button>
             </div>
             <span class="pseudo-hide">{{ waterConservationInput1('water_districts') }}</span>
             <span>{{ waterConservationInput2('water_districts') }}</span>
@@ -90,33 +102,48 @@
           
             <!-- Conservation Tab -->
             <div class="tab-pane active fullheight" data-value="Conservation" id="tab-1">
+              <!-- summary row -->
               <div class="row summary-row">
                 <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
                   <div class="value">{{ textOutput('savings') }}</div>
-                  <div class="caption">Savings</div>
+                  <div class="caption">Water Savings</div>
                 </div></div>
                 <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
                   <div class="value">{{ textOutput('vs_std') }}</div>
-                  <div class="caption">Vs target</div>
+                  <div class="caption">{{ textOutput('vs_std_label') }}</div>
                 </div></div>
-                <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner energy-info">
                   <div class="value">{{ textOutput('energy') }}</div>
-                  <div class="caption">Energy Savings</div>
+                  <div class="caption">Resulting Energy Savings</div>
                 </div></div>
-                <div class="col-sm-3 infobox-outer"><div class="infobox-inner">
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner ghg-info">
                   <div class="value">{{ textOutput('ghg') }}</div>
-                  <div class="caption">GHG Savings</div>
+                  <div class="caption">Resulting GHG Savings</div>
                 </div></div>
               </div>
+              <!-- main output row -->
               <div class="row fullheight">
+                <!-- bar chart -->
+                <div id = "chart-col" class="col-sm-6 fullheight main-output-col">
+                  <div class="main-output-wrapper fullheight">
+                    {{ waterConservationOutput2('water_districts') }}
+                  </div>
+                </div>
+                <!-- energy bar chart -->
+                <div id = "ghg-cars-col" class="col-sm-6 infobox-outer"><div class="infobox-inner ghg-info">
+                  <div class="caption">Estimated GHG emissions reduction equivalent to taking…</div>
+                  <div class="value">{{ textOutput('n_cars') }}</div>
+                  <div class="caption">Cars Off the Road for a Year</div>
+                </div></div>
+                <div id = "ghg-col" class="col-sm-6 main-output-col">
+                  <div class="main-output-wrapper fullheight">
+                    {{ highchartOutput('energy_barchart', height = '100%') }}
+                  </div>
+                </div>
+                <!-- map -->
                 <div id = "map-col" class="col-sm-6 fullheight main-output-col pseudo-hide">
                   <div class="main-output-wrapper fullheight">
                     {{ waterConservationOutput1('water_districts') }}
-                  </div>
-                </div>
-                <div id = "chart-col"  class="col-sm-12 fullheight main-output-col">
-                  <div class="main-output-wrapper fullheight">
-                    {{ waterConservationOutput2('water_districts') }}
                   </div>
                 </div>
               </div>
@@ -126,16 +153,67 @@
             <div class="tab-pane" data-value="Quality" id="tab-2">
               <div class="row">
                 <div class="col-sm-12">
-                  <p class="lead">Placeholder for water quality data...</p>
+                  <h2>Most Common Water Quality Violations</h2>
+                  {{ waterQualityOutput1('water_quality') }}
+                  <h2>Most Common Wastewater Violations</h2>
+                  {{ waterQualityOutput2('water_quality') }}
                 </div>
               </div>
             </div>
             
-            <!-- Methods Tab -->
-            <div class="tab-pane" data-value="Methods" id="tab-3">
+            <!-- Info Tab -->
+            <div class="tab-pane" data-value="Info" id="tab-3">
               <div class="row">
                 <div class="col-sm-12">
-                  <p class="lead">Placeholder for methods...</p>
+                  <h2>Background</h2>
+                  <p>This application was created at the <a href="http://cwee.ucdavis.edu/" target="_blank">UC Davis Center for Water-Energy Efficiency</a> as
+                    part of the <a href = http://www.waterboards.ca.gov/resources/data_databases/data_innov_challenge.shtml
+                    target='_blank'>2016 CA Water Board Data Innovation Challenge</a>.</p>
+                  <h2>Data Sources</h2>
+                  <ul>
+                    <li><a href = 'http://www.waterboards.ca.gov/water_issues/programs/conservation_portal/conservation_reporting.shtml' target='_blank'>Water Conservation Reporting</a> (State Water Resources Control Board)</li>
+                    <li><a href = 'https://greengov.data.ca.gov/Location/CA-Water-District-Boundaries/2952-74g4' target='_blank'>CA Water District Boundaries</a> (GreenGov Portal)</li>
+                    <li><a href = 'http://www.energy.ca.gov/sb1305/labels/index.html' target='_blank'>CA Power Mix By Utility</a> (California Energy Commission)</li>
+                    <li><a href = 'http://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/EDTlibrary.shtml' target='_blank'>Water Quality Testing Results</a> (State Water Resources Control Board)</li>
+                    <li><a href = 'https://greengov.data.ca.gov/Water/Water-Board-Wastewater-Violations-2001-2016/j9ag-8iad' target='_blank'>Wastewater Violations</a> (GreenGov Portal)</li>
+                  </ul>
+                  <h2>Other References</h2>
+                  <ul>
+                    <li><a href = 'http://www.cpuc.ca.gov/WorkArea/DownloadAsset.aspx?id=5356' target='_blank'>Average Energy Intensity By Hydrologic Region</a> (California Public Utilities Commission)</li>
+                    <li><a href = 'https://www.epa.gov/energy/egrid' target='_blank'>GHG Emissions By Fuel Type</a> (US EPA)</li>
+                    <li><a href = 'http://eestats.cpuc.ca.gov/Default.aspx' target='_blank'>CA Energy Efficiency Programs Statistics</a> (California Public Utilities Commission)</li>
+                  </ul>
+                  <h2>Project Summary</h2>
+                  <p>
+                    In April 2015, Governor Brown mandated a 25 percent statewide reduction in water use by urban water suppliers across the state
+                    (relative to 2013 levels) with differentiated conservation targets for utilities with varying levels of baseline per capita usage
+                    (<a href = 'https://www.gov.ca.gov/docs/4.1.15_Executive_Order.pdf' target='_blank'>Executive Order B-29-15</a>). The more than 400 public
+                    water agencies affected by the regulation were also required to report monthly progress towards the conservation goal
+                    to the State Water Board. This application uses the reported data to visualize how different water utilities
+                    have responded to this mandate.  In addition to displaying a summary of water use relative to the conservation target for each district,
+                    we also calculate the electricity savings associated with the reduced demand on water infrastructure services using estimates of average
+                    energy intensity per hydrologic region. We then convert the electricity savings into avoided greenhouse gas (GHG) emissions based on the
+                    emissions factor specific to the water utility's regional electricity provider. We can view the total water, energy, and GHG savings aggregated
+                    at the state level, as well as for each of the individual water utilities. One of the significant findings is that the electricity savings
+                    associated with the observed achievements in water conservation is roughly equivalent to the total electricity savings estimated for all of
+                    the energy IOU efficiency programs for the period from July through September 2015 (the period where data was available for both initiatives).
+                    In addition, the water conservation-related GHG savings over the same period represent the equivalent of taking about 50,000 cars off the road
+                    for a year.
+                  </p>
+                  <p>
+                    In addition to the water conservation data, we prepared a few summary tables of the most common water quality testing and stormwater
+                    violation data for each utility. This data demonstrates how additional data could be integrated into the application to enrich the summary
+                    reports for each utility.
+                  </p>
+                  <h2>UC Davis Center for Water-Energy Efficiency</h2>
+                  <p>Around the world, water and energy resources are increasingly stressed by expanding demand, diminished supply, and
+                      environmental degradation, all of which occur within the broader context of complex economic and regulatory challenges.
+                      Historically, public policy and business practice have treated water and energy as separate resources, but they are inextricably
+                      linked. Water delivery and treatment systems and the energy production and distribution infrastructure are intertwined and
+                      interdependent. Unfortunately, our ability to measure, monitor, and manage this coupled water-energy system is underdeveloped.
+                      The Center for Water-Energy Efficiency (CWEE) at UC Davis seeks to address this gap and advance resource use efficiency through
+                      integrated water–energy management.
+                  </p>
                 </div>
               </div>
             </div>
