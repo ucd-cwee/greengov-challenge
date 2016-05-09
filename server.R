@@ -23,7 +23,9 @@ function(input, output, session) {
       hc_title(text = "Electricity Savings from Statewide Water Conservation vs. Total Electricity Savings from Energy IOU Efficiency Programs<br/><b>(Jul - Sep 2015)</b>",
                style = list(fontSize = '14px', useHTML = TRUE)) %>% 
       hc_xAxis(categories = c('Energy Efficiency Programs<br/>by End Use Category', 'Energy Savings Resulting<br>from Water Conservation')) %>% 
-      hc_yAxis(title = list(text = "GWh Energy Saved")) %>% 
+      hc_yAxis(title = list(text = "GWh Energy Saved"),
+               stackLabels = list(enabled = TRUE, style = list(fontWeight = 'bold', color = 'gray'),
+                                  formatter = JS('function() { return this.total.toFixed(1); }'))) %>% 
       hc_series(appliance_data,
                 hvac_data,
                 indoorlighting_data,
@@ -35,6 +37,28 @@ function(input, output, session) {
                 waterenergy_data) %>% 
       hc_plotOptions(column = list(stacking = 'normal')) %>% 
       hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + this.y.toFixed(1) + ' GWh'; }"))
+  })
+  
+  output$cost_barchart <- renderHighchart({
+    highchart() %>% 
+      hc_chart(type = "column") %>% 
+      hc_title(text = "Total Cost of Statewide Water Conservation vs. Expenditures on Energy IOU Efficiency Programs<br/><b>(Jul - Sep 2015)</b>",
+               style = list(fontSize = '14px', useHTML = TRUE)) %>% 
+      hc_xAxis(categories = c('Energy Efficiency Programs<br/>by End Use Category', 'Water Conservation')) %>% 
+      hc_yAxis(title = list(text = "Million Dollars"),
+               stackLabels = list(enabled = TRUE, style = list(fontWeight = 'bold', color = 'gray'),
+                                  formatter = JS('function() { return "$" + this.total.toFixed(1) + "M"; }'))) %>% 
+      hc_series(appliance_cost_data,
+                hvac_cost_data,
+                indoorlighting_cost_data,
+                other_cost_data,
+                outdoorlighting_cost_data,
+                process_cost_data,
+                refrigeration_cost_data,
+                wholebuilding_cost_data,
+                waterenergy_cost_data) %>% 
+      hc_plotOptions(column = list(stacking = 'normal')) %>% 
+      hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + '$' + this.y.toFixed(1) + 'M'; }"))
   })
   
   savings <- reactive({

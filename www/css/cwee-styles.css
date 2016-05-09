@@ -36,6 +36,7 @@ body {
 
 .main-wrapper {
   height: calc(100% - 126px);
+  min-height: 550px;
 }
 
 .fullheight {
@@ -51,7 +52,7 @@ body {
 }
 
 #ghg-col{
-  height: calc(100% - 95px);
+  height: calc(100% - 128px);
 }
 
 
@@ -90,6 +91,11 @@ body {
   background-color: #B27B4F;
 }
 
+/* graph tabs */
+#ghg-col > div > .nav > li > a {
+ padding: 5px 15px;
+}
+
 /* main outputs */
 
 .main-output-col {
@@ -106,6 +112,12 @@ body {
 }
 
 #energy_barchart {
+  border-radius: 2px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+#cost_barchart {
   border-radius: 2px;
   border: 1px solid #ddd;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);

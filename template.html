@@ -114,7 +114,7 @@
                 </div></div>
                 <div class="col-sm-3 infobox-outer"><div class="infobox-inner energy-info">
                   <div class="value">{{ textOutput('energy') }}</div>
-                  <div class="caption">Resulting Energy Savings</div>
+                  <div class="caption">Resulting Electricity Savings</div>
                 </div></div>
                 <div class="col-sm-3 infobox-outer"><div class="infobox-inner ghg-info">
                   <div class="value">{{ textOutput('ghg') }}</div>
@@ -129,17 +129,35 @@
                     {{ waterConservationOutput2('water_districts') }}
                   </div>
                 </div>
-                <!-- energy bar chart -->
+                <!-- GHG info -->
                 <div id = "ghg-cars-col" class="col-sm-6 infobox-outer"><div class="infobox-inner ghg-info">
                   <div class="caption">Estimated GHG emissions reduction equivalent to taking…</div>
                   <div class="value">{{ textOutput('n_cars') }}</div>
                   <div class="caption">Cars Off the Road for a Year</div>
                 </div></div>
+                
+                <!-- energy & cost bar chart -->
                 <div id = "ghg-col" class="col-sm-6 main-output-col">
-                  <div class="main-output-wrapper fullheight">
-                    {{ highchartOutput('energy_barchart', height = '100%') }}
+                  <div class="tabbable tabs-above fullheight">
+                    <ul class="nav nav-tabs">
+                      <li class="active">
+                        <a href="#energy_bc" data-toggle="tab" data-value="energy">Energy</a>
+                      </li>
+                      <li>
+                        <a href="#cost_bc" data-toggle="tab" data-value="cost">Cost</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content fullheight">
+                      <div id="energy_bc" class="tab-pane main-output-wrapper fullheight tab-pane active" data-value="energy">
+                        {{ highchartOutput('energy_barchart', height = '100%') }}
+                      </div>
+                      <div id="cost_bc" class="tab-pane main-output-wrapper fullheight tab-pane" data-value="cost">
+                        {{ highchartOutput('cost_barchart', height = '100%') }}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </div> 
+                
                 <!-- map -->
                 <div id = "map-col" class="col-sm-6 fullheight main-output-col pseudo-hide">
                   <div class="main-output-wrapper fullheight">
