@@ -95,9 +95,9 @@ waterConservation <- function(input, output, session,
     
     leaflet(map_data) %>%
       addProviderTiles("CartoDB.PositronNoLabels") %>% 
+      addProviderTiles("Stamen.TonerLabels") %>%
       addPolygons(layerId = ~PWS_ID, color = '#444', weight = 1,
                   fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo) %>%
-      addProviderTiles("Stamen.TonerLabels") %>%
       addLegend("bottomleft", pal = pal, values = ~sav_diff,
                 title = "Missed Target by",
                 opacity = 1, labFormat = labelFormat(prefix = '(', suffix = ')%', between = ', ', transform = function(x) 100 * x))
@@ -121,6 +121,7 @@ waterConservation <- function(input, output, session,
   observeEvent(util(), {
     
     selected_util <- util()
+    
     if (selected_util != 'statewide') {
       ns <- session$ns
       pal <- colorBin(rev(c("#A50026","#F46D43","#FEE090","#E0F3F8","#74ADD1","#313695")), domain = map_data$sav_diff, bins = c(-0.3,-0.2,-0.1,0,0.1,0.2,0.3))

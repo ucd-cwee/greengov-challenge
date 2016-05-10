@@ -3,14 +3,14 @@
   <head>
     <!-- Shiny dependencies -->
     {{ headContent() }}
-    
+
     <!-- Bootstrap -->
     {{ bootstrapLib() }}
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Custom styles for this project -->
     <link href="css/cwee-styles.css" rel="stylesheet">
-    
+
     <script>
       function nav_conservation(e) {
         $("#water_districts-daterange").removeClass('hidden');
@@ -21,7 +21,7 @@
         $("#state-btn-utility").click();
         $("#state-btn-statewide").prop('disabled', true);
       }
-      
+
       var statewide = (function () {
           var counter = 0;
           return function () {return counter += 1;}
@@ -49,7 +49,7 @@
         $(window).trigger('resize');
       }
     </script>
-    
+
   </head>
 
   <body>
@@ -76,11 +76,11 @@
         </a></li>
       </ul>
     </nav>
-    
+
     <div id = "main-wrapper" class="container-fluid main-wrapper">
-      
+
       <div class="row fullheight">
-        
+
         <!-- main control panel -->
         <div class="col-sm-3 main-panel">
           <form class="well">
@@ -95,11 +95,11 @@
             <img style="width:100%;" src="images/CWEE-mark2013.png" alt="UC Davis Center for Water-Energy Efficiency">
           </a>
         </div>
-        
+
         <!-- content tabs -->
         <div class="col-sm-9 fullheight">
           <div class="tab-content fullheight">
-          
+
             <!-- Conservation Tab -->
             <div class="tab-pane active fullheight" data-value="Conservation" id="tab-1">
               <!-- summary row -->
@@ -135,7 +135,7 @@
                   <div class="value">{{ textOutput('n_cars') }}</div>
                   <div class="caption">Cars Off the Road for a Year</div>
                 </div></div>
-                
+
                 <!-- energy & cost bar chart -->
                 <div id = "ghg-col" class="col-sm-6 main-output-col">
                   <div class="tabbable tabs-above fullheight">
@@ -144,20 +144,32 @@
                         <a href="#energy_bc" data-toggle="tab" data-value="energy">Energy</a>
                       </li>
                       <li>
+                        <a href="#energy_year_bc" data-toggle="tab" data-value="energy_year">Energy (1 year)</a>
+                      </li>
+                      <li>
                         <a href="#cost_bc" data-toggle="tab" data-value="cost">Cost</a>
+                      </li>
+                      <li>
+                        <a href="#costperkwh_bc" data-toggle="tab" data-value="costperkwh">Cost per kWh</a>
                       </li>
                     </ul>
                     <div class="tab-content fullheight">
                       <div id="energy_bc" class="tab-pane main-output-wrapper fullheight tab-pane active" data-value="energy">
                         {{ highchartOutput('energy_barchart', height = '100%') }}
                       </div>
+                      <div id="energy_year_bc" class="tab-pane main-output-wrapper fullheight tab-pane" data-value="energy_year">
+                        {{ highchartOutput('energy_year_barchart', height = '100%') }}
+                      </div>
                       <div id="cost_bc" class="tab-pane main-output-wrapper fullheight tab-pane" data-value="cost">
                         {{ highchartOutput('cost_barchart', height = '100%') }}
                       </div>
+                      <div id="costperkwh_bc" class="tab-pane main-output-wrapper fullheight tab-pane" data-value="costperkwh">
+                        {{ highchartOutput('costperkwh_barchart', height = '100%') }}
+                      </div>
                     </div>
                   </div>
-                </div> 
-                
+                </div>
+
                 <!-- map -->
                 <div id = "map-col" class="col-sm-6 fullheight main-output-col pseudo-hide">
                   <div class="main-output-wrapper fullheight">
@@ -166,7 +178,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Water Quality Tab -->
             <div class="tab-pane" data-value="Quality" id="tab-2">
               <div class="row">
@@ -178,7 +190,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Info Tab -->
             <div class="tab-pane" data-value="Info" id="tab-3">
               <div class="row">
@@ -199,7 +211,12 @@
                   <ul>
                     <li><a href = 'http://www.cpuc.ca.gov/WorkArea/DownloadAsset.aspx?id=5356' target='_blank'>Average Energy Intensity By Hydrologic Region</a> (California Public Utilities Commission)</li>
                     <li><a href = 'https://www.epa.gov/energy/egrid' target='_blank'>GHG Emissions By Fuel Type</a> (US EPA)</li>
-                    <li><a href = 'http://eestats.cpuc.ca.gov/Default.aspx' target='_blank'>CA Energy Efficiency Programs Statistics</a> (California Public Utilities Commission)</li>
+                    <li><a href = 'http://eestats.cpuc.ca.gov/Default.aspx' target='_blank'>CA Energy Efficiency Programs Statistics</a> &mdash; Electricity Savings and Program Costs &mdash; (California Public Utilities Commission)</li>
+                    <li><a href = 'http://www.waterboards.ca.gov/water_issues/programs/conservation_portal/docs/econ_impact_report_012216.pdf' target='_blank'>Cost of Conservation Mandate to Water Suppliers</a> &mdash; $75 per af &mdash; (State Water Resources Control Board)</li>
+                  </ul>
+                  <h2>Assumptions</h2>
+                  <ul>
+                    <li>&hellip;</li>
                   </ul>
                   <h2>Project Summary</h2>
                   <p>
@@ -235,10 +252,10 @@
                 </div>
               </div>
             </div>
-            
+
           </div>
         </div>
-        
+
       </div>
     </div>
   </body>
