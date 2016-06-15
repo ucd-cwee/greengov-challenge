@@ -66,9 +66,21 @@ loadSupplierData <- function(reload = NULL, env = globalenv(),
     if(ans == "y"){
 
         ## retrieve and edit raw files
-        file_names <- list.files(getwd(), pattern = "uw_supplier")
-        waterSupplierReport <- llply(file_names, read_excel)
-        waterSupplierReport <- rbind.fill(waterSupplierReport)
+        URL <- paste0("http://www.waterboards.ca.gov/",
+                      "water_issues/programs/conservation_portal",
+                      "/conservation_reporting.shtml")
+        pg <- read_html(URL)
+        datLoc <- grep("uw_supplier",
+                    html_attr(html_nodes(pg, "a"), "href"),
+                    value = TRUE)[1]
+
+        url <- paste0("www.waterboards.ca.gov/water_issues/",
+                      "programs/conservation_portal/", datLoc)
+
+        download.file(url, "current_uw_supplier.xlsx", method = "curl")
+        current_file_name <- list.files(getwd(),
+                                        pattern = "current_uw_supplier")
+        waterSupplierReport <- read_excel(current_file_name)
 
         colnames(waterSupplierReport) <- gsub(" ", "_",
                                               colnames(waterSupplierReport))
