@@ -8,9 +8,9 @@
 #' @keywords
 #' @export
 #' @examples
-loadWasteWaterViolationsData <- function(reload = NULL, env = globalenv(),
-                                         dataDirectory =
-                                             "~/Documents/greengov-challenge/Data/"){
+loadWasteWaterViolationsData <-
+    function(reload = NULL, env = globalenv(),
+             dataDirectory = "~/Documents/greengov-challenge/Data/"){
     setwd(dataDirectory)
     require(helperFunctions)
     ans <- inquire("reload Waste Water Violations data? ",
@@ -61,25 +61,31 @@ loadSupplierData <- function(reload = NULL, env = globalenv(),
                                  "~/Documents/greengov-challenge/Data/"){
     setwd(dataDirectory)
     require(helperFunctions)
+    require(rvest)
+    require(RCurl)
     ans <- inquire("reload supplier data? ",
                                  answer = reload)
     if(ans == "y"){
 
-        ## retrieve and edit raw files
+        ## retrieve and edit raw files from the
+        ## waterboards.ca.gov site. download the file to a local
+        ## directory, then read it immediately into the function
+        ## environment.
         URL <- paste0("http://www.waterboards.ca.gov/",
                       "water_issues/programs/conservation_portal",
                       "/conservation_reporting.shtml")
         pg <- read_html(URL)
-        datLoc <- grep("uw_supplier",
+        datLocation <- grep("uw_supplier",
                     html_attr(html_nodes(pg, "a"), "href"),
                     value = TRUE)[1]
 
         url <- paste0("www.waterboards.ca.gov/water_issues/",
-                      "programs/conservation_portal/", datLoc)
+                      "programs/conservation_portal/", datLocation)
 
         download.file(url, "current_uw_supplier.xlsx", method = "curl")
         current_file_name <- list.files(getwd(),
                                         pattern = "current_uw_supplier")
+        
         waterSupplierReport <- read_excel(current_file_name)
 
         colnames(waterSupplierReport) <- gsub(" ", "_",
@@ -367,7 +373,9 @@ loadSupplierWQData <- function(reload = NULL, env = globalenv(),
 #' @examples
 loadSupplierSummaryData <- function(reload = NULL, env = globalenv(),
                                     yield_top = 5,
-                                    dataDirectory = "~/Documents/greengov-challenge/Data/"){
+                                    dataDirectory = paste0("~/Documents/",
+                                                           "greengov-challenge",
+                                                           "/Data/"){
     setwd(dataDirectory)
     require(helperFunctions)
     ans <- inquire("reload supplier Water Quality data? ",
