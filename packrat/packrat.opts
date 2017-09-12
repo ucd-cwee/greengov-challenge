@@ -6,7 +6,7 @@ vcs.ignore.src: TRUE
 external.packages: devtools
 local.repos: 
 load.external.packages.on.startup: TRUE
-ignored.packages: 
+ignored.packages: helperFunctions
 quiet.package.installation: TRUE
 snapshot.recommended.packages: FALSE
 snapshot.fields:
