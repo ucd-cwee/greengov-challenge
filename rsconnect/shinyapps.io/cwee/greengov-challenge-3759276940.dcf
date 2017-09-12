@@ -1,0 +1,10 @@
+name: greengov-challenge-3759276940
+account: cwee
+server: shinyapps.io
+appId: 109742
+bundleId: 485038
+url: https://cwee.shinyapps.io/greengov-challenge-3759276940/
+when: 1466484946.42524
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: water_dashboard.html|water_dashboard.Rmd|data/statewide_byMonth.rds|data/util_summary.rds|data/water_byMonth.rds|data/water_districts.rds|yoni-code/createSqliteDB.R|yoni-code/functions.R

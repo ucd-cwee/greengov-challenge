@@ -82,8 +82,8 @@ waterConservation <- function(input, output, session,
   # update UI control
   output$daterange <- renderUI({
     ns <- session$ns
-    sliderInput(ns('daterange'), label = "Date Range", min = as.Date('2015-6-1'), max = as.Date('2016-2-29'),
-                value = c(as.Date('2015-6-1'), as.Date('2016-2-29')), timeFormat = "%b %Y")
+    sliderInput(ns('daterange'), label = "Date Range", min = as.Date('2015-6-1'), max = as.Date('2016-4-30'),
+                value = c(as.Date('2015-6-1'), as.Date('2016-4-30')), timeFormat = "%b %Y")
   })
   
   # Map --------------------------------------------------------------------
