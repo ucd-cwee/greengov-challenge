@@ -10,12 +10,12 @@
 #' @examples
 loadWasteWaterViolationsData <-
     function(reload = NULL, env = globalenv(),
-             dataDirectory = "~/Documents/greengov-challenge/Data/"){
+             dataDirectory = "~/Documents/greengov-challenge/Data/") {
     setwd(dataDirectory)
     require(helperFunctions)
     ans <- inquire("reload Waste Water Violations data? ",
                                  answer = reload)
-    if(ans == "y"){
+    if (ans == "y"){
 
         wasteWaterData <- read.csv(paste0("Water_Board_Wastewater",
                                           "_Violations_2001-2016.csv"))
@@ -33,7 +33,7 @@ loadWasteWaterViolationsData <-
                                                     -PLACE.LONGITUDE > -125,
                                                     -PLACE.LONGITUDE,
                                                     as.numeric(NA))))
-        
+
         save(wasteWaterData, file =  "wasteViolationsData.rda")
     }
 
@@ -42,7 +42,7 @@ loadWasteWaterViolationsData <-
 
     assign("wasteWaterServiceAreas", wasteWaterServiceAreas, envir = env)
     load("wasteViolationsData.rda", envir = env)
-    
+
     return(0)
 }
 
@@ -58,14 +58,14 @@ loadWasteWaterViolationsData <-
 #' @examples
 loadSupplierData <- function(reload = NULL, env = globalenv(),
                              dataDirectory =
-                                 "~/Documents/greengov-challenge/Data/"){
+                                 "~/Documents/greengov-challenge/Data/") {
     setwd(dataDirectory)
     require(helperFunctions)
     require(rvest)
     require(RCurl)
     ans <- inquire("reload supplier data? ",
                                  answer = reload)
-    if(ans == "y"){
+    if (ans == "y") {
 
         ## retrieve and edit raw files from the
         ## waterboards.ca.gov site. download the file to a local
@@ -85,7 +85,7 @@ loadSupplierData <- function(reload = NULL, env = globalenv(),
         download.file(url, "current_uw_supplier.xlsx", method = "curl")
         current_file_name <- list.files(getwd(),
                                         pattern = "current_uw_supplier")
-        
+
         waterSupplierReport <- read_excel(current_file_name)
 
         colnames(waterSupplierReport) <- gsub(" ", "_",
@@ -107,7 +107,7 @@ loadSupplierData <- function(reload = NULL, env = globalenv(),
                               as.numeric(TotMonthlyH20ProdCurrent)) %>%
             dplyr::mutate(proportionChange =
                               (TotMonthlyH20Prod2013 -
-                               TotMonthlyH20ProdCurrent)/
+                               TotMonthlyH20ProdCurrent) /
                               TotMonthlyH20Prod2013,
                           proportionChangeGoal =
                               as.numeric(conservationStandard)) %>%
@@ -120,7 +120,7 @@ loadSupplierData <- function(reload = NULL, env = globalenv(),
 
         ## supplier ID data:
         loadSupplierIdData(reload = "y", env = environment())
-        
+
         save(waterService_id,
              waterSupplierReport,
              waterServiceAreas,
@@ -142,12 +142,12 @@ loadSupplierData <- function(reload = NULL, env = globalenv(),
 #' @examples
 loadSupplierIdData <- function(reload = NULL, env = globalenv(),
                                dataDirectory =
-                                   "~/Documents/greengov-challenge/Data/"){
+                                   "~/Documents/greengov-challenge/Data/") {
     setwd(dataDirectory)
     require(helperFunctions)
     ans <- inquire("reload id data? ",
                                  answer = reload)
-    if(ans == "y"){
+    if (ans == "y"){
 
         ## retrieve and edit raw files
         waterService_id <- read_excel("UWMP_PWS_IDs_07-29-14.xls")
@@ -160,9 +160,9 @@ loadSupplierIdData <- function(reload = NULL, env = globalenv(),
                                      by = "Urban_Water_Supplier") %>%
             dplyr::select(Supplier_Name, PWSID_1 = PWS_ID) %>%
             dplyr::mutate(PWSID_1 = ifelse(PWSID_1 == "NA", NA, PWSID_1))
-        
+
         save(waterService_id, file = "supplierIdData.rda")
-        
+
     }
     load("supplierIdData.rda", envir = env)
     return(0)
@@ -176,11 +176,11 @@ loadSupplierIdData <- function(reload = NULL, env = globalenv(),
 #' @keywords
 #' @export
 #' @examples
-sendQueryWaterQuality <- function(sql, con = NULL){
+sendQueryWaterQuality <- function(sql, con = NULL) {
     if (is.null(con)) {
      con <- dbConnect(SQLite(),
                     paste0(dataDirectory,
-                           "waterQuality"))   
+                           "waterQuality"))
     }
     dbSendQuery(con, sql)
 }
@@ -193,7 +193,7 @@ sendQueryWaterQuality <- function(sql, con = NULL){
 #' @keywords
 #' @export
 #' @examples
-getQueryWaterQuality <- function(sql, con = NULL){
+getQueryWaterQuality <- function(sql, con = NULL) {
     if (is.null(con)){
         con <- dbConnect(SQLite(),
                         paste0(dataDirectory,
@@ -220,10 +220,10 @@ getWQData <- function(lwrBnd_date = "2015-1-1",
                       uprBnd_date = "2016-4-12",
                       date_format = "%Y-%m-%d",
                       chemical = NULL,
-                      PWS_ID = NULL){
+                      PWS_ID = NULL) {
 
     ## check the date types and adjust accordingly
-    if(!is.Date(lwrBnd_date) | !is.Date(uprBnd_date)){
+    if (!is.Date(lwrBnd_date) | !is.Date(uprBnd_date)) {
         jdates <- julian(as.Date(c(lwrBnd_date, uprBnd_date),
                                  format = date_format))
         lwrBnd_date <- jdates[1]
@@ -236,7 +236,7 @@ getWQData <- function(lwrBnd_date = "2015-1-1",
 
     ## create
     chem_constraint <- ""
-    if(!is.null(chemical)){
+    if (!is.null(chemical)) {
         sn_resp <- getQueryWaterQuality(paste0("
                      SELECT STORE_NUM
                      FROM storet
@@ -245,12 +245,12 @@ getWQData <- function(lwrBnd_date = "2015-1-1",
     }
 
     PWS_ID_constraint <- ""
-    if(!is.null(PWS_ID)){
+    if (!is.null(PWS_ID)) {
         sql_vals <- paste(paste0("'", gsub("CA", "", PWS_ID), "'"),
                           collapse = ", ")
         PWS_ID_constraint <- paste("WHERE SYSTEM_NO IN ", "(", sql_vals, ")")
     }
-    
+
     db <- dbConnect(SQLite(),
                     paste0(dataDirectory,
                            "waterQuality"))
@@ -273,7 +273,7 @@ getWQData <- function(lwrBnd_date = "2015-1-1",
                       FROM storet
            ) AS b
            ON (a.STORE_NUM = b.STORE_NUMBER);")
-    sendQueryWaterQuality(sql, con = db)    
+    sendQueryWaterQuality(sql, con = db)
     sql <- "CREATE TEMPORARY TABLE d2 AS
             SELECT *
             FROM d1 INNER JOIN (
@@ -296,8 +296,8 @@ getWQData <- function(lwrBnd_date = "2015-1-1",
     ## return the results
 
     ## some field explanations:
-    
-    ## CLS – class for chemical (P = purgeable or VOC; A = agricultural; 
+
+    ## CLS – class for chemical (P = purgeable or VOC; A = agricultural;
     ## T =  “Title 22” or inorganics, physical, and minerals; R = radiological;
     ## B = bna or base, neutral, acid extractable; X = other)
 
@@ -347,12 +347,12 @@ loadSupplierWQData <- function(reload = NULL, env = globalenv(),
     require(helperFunctions)
     ans <- inquire("reload supplier Water Quality data? ",
                                  answer = reload)
-    if(ans == "y"){
-        if(!exists("waterService_id")){
+    if (ans == "y") {
+        if(!exists("waterService_id")) {
             loadSupplierIdData(reload = "n", env = environment())
         }
         ids <- na.omit(unique(waterService_id$PWSID_1))
-        
+
         supplierWaterQualityData <- getWQData(PWS_ID = ids)
         save(supplierWaterQualityData, file = "supplierWaterQualityData.rda")
     }
@@ -375,12 +375,12 @@ loadSupplierSummaryData <- function(reload = NULL, env = globalenv(),
                                     yield_top = 5,
                                     dataDirectory = paste0("~/Documents/",
                                                            "greengov-challenge",
-                                                           "/Data/"){
+                                                           "/Data/")) {
     setwd(dataDirectory)
     require(helperFunctions)
     ans <- inquire("reload supplier Water Quality data? ",
                                  answer = reload)
-    if(ans == "y"){
+    if (ans == "y") {
         loadWasteWaterViolationsData(env = environment(),
                                              reload = "n")
         loadSupplierWQData(env = environment(),
@@ -390,17 +390,17 @@ loadSupplierSummaryData <- function(reload = NULL, env = globalenv(),
             dplyr::distinct() %>%
             dplyr::select(FACILITY.NAME = facility_n,
                           PWSID_1)
-        
+
         violations <- left_join(wasteWaterData, ids, by = "FACILITY.NAME")
         violations$PWSID_1 <- as.character(violations$PWSID_1)
         violationsSummary <- violations %>%
             dplyr::group_by(PWSID_1, VIOLATION.TYPE) %>%
-            dplyr::summarise(count_violations= n()) %>%
+            dplyr::summarise(count_violations = n()) %>%
             dplyr::ungroup() %>%
             dplyr::group_by(PWSID_1) %>%
             dplyr::top_n(n = yield_top, wt = count_violations) %>%
             dplyr::ungroup()
-        
+
         waterQualitySummary <- supplierWaterQualityData %>%
             dplyr::filter(!(XMOD %in% c("<", "F", "I", "Q"))) %>%
             dplyr::group_by(PWS_ID, CHEMICAL__, RPT_UNIT) %>%
@@ -427,7 +427,7 @@ loadSupplierSummaryData <- function(reload = NULL, env = globalenv(),
 #' @keywords
 #' @export
 #' @examples
-gmapsQuery <- function(address){
+gmapsQuery <- function(address) {
     key = "AIzaSyClY2vHnR3j_cTUtvVCm58OBXAnv1VTWgY"
     req_string <- paste0("https://maps.googleapis.com/maps/api/geocode/json",
                          "?address=",
