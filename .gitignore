@@ -8,9 +8,9 @@
 
 # rendered html file
 water_dashboard.html
-
 # data directory
 /data
-
 # images
 /www/images
+packrat/lib*/
+packrat/src/
