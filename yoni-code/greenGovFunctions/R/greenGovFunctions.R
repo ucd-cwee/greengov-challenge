@@ -1,46 +1,19 @@
-wc_funs <- new.env()
 
-wc_funs$dataDirectory <- "~/Documents/greengov-challenge/Data/"
-wc_funs$containingDirectory <- "~/Documents/greengov-challenge/yoni-code/"
-
-source("~/Documents/R/R_convenience/helper_functions.R",
-       local = wc_funs)
-
-
-## function to call the reload statement:
-wc_funs$inquireReload <- function(yesNoQuestion, answer = NULL){
-    if(is.null(answer)){
-        ans <- readline(yesNoQuestion)
-        while(ans != "n" & ans != "y"){
-            ans <- readline("please answer y/n: ")
-        }
-    } else {
-        return(answer)
-    }
-    return(ans)
-}
-
-## load the ceden data
-wc_funs$loadCedenData <- function(reload = NULL, env = globalenv()){
-    setwd(wc_funs$dataDirectory)
-    ans <- wc_funs$inquireReload("reload ceden data? ",
-                                 answer = reload)
-    if(ans == "y"){
-
-        ceden_data <- read.csv("Surface_Water_Toxicity_2003-2014.csv")
-        ceden_data_location <- read.csv("CEDEN-Stations.csv")
-        save(ceden_data, ceden_data_location, file =  "ceden.rda")
-        
-    }
-    load("ceden.rda", envir = env)
-    return(0)
-}
-
-## get the waste water violations data
-wc_funs$loadWasteWaterViolationsData <- function(reload = NULL,
-                                                 env = globalenv()){
-    setwd(wc_funs$dataDirectory)
-    ans <- wc_funs$inquireReload("reload Waste Water Violations data? ",
+#' Load Waste Water Violations
+#'
+#' get the waste water violations data
+#' @param reload character ("y"/"n") - should the data be re-constructed?
+#' @param env environment to load the data into
+#' @param dataDirectory character - where is the raw data located?
+#' @keywords
+#' @export
+#' @examples
+loadWasteWaterViolationsData <-
+    function(reload = NULL, env = globalenv(),
+             dataDirectory = "~/Documents/greengov-challenge/Data/"){
+    setwd(dataDirectory)
+    require(helperFunctions)
+    ans <- inquire("reload Waste Water Violations data? ",
                                  answer = reload)
     if(ans == "y"){
 
@@ -73,17 +46,47 @@ wc_funs$loadWasteWaterViolationsData <- function(reload = NULL,
     return(0)
 }
 
-## load the water supplier data
-wc_funs$loadSupplierData <- function(reload = NULL, env = globalenv()){
-    setwd(wc_funs$dataDirectory)
-    ans <- wc_funs$inquireReload("reload supplier data? ",
+
+#' Load Supplier Data
+#'
+#' load the water supplier data
+#' @param reload - y/n/null should data be reconstructed
+#' @param env - environment to load data into
+#' @param dataDirectory - character string of where the data is located
+#' @keywords
+#' @export
+#' @examples
+loadSupplierData <- function(reload = NULL, env = globalenv(),
+                             dataDirectory =
+                                 "~/Documents/greengov-challenge/Data/"){
+    setwd(dataDirectory)
+    require(helperFunctions)
+    require(rvest)
+    require(RCurl)
+    ans <- inquire("reload supplier data? ",
                                  answer = reload)
     if(ans == "y"){
 
-        ## retrieve and edit raw files
-        file_names <- list.files(getwd(), pattern = "uw_supplier")
-        waterSupplierReport <- llply(file_names, read_excel)
-        waterSupplierReport <- rbind.fill(waterSupplierReport)
+        ## retrieve and edit raw files from the
+        ## waterboards.ca.gov site. download the file to a local
+        ## directory, then read it immediately into the function
+        ## environment.
+        URL <- paste0("http://www.waterboards.ca.gov/",
+                      "water_issues/programs/conservation_portal",
+                      "/conservation_reporting.shtml")
+        pg <- read_html(URL)
+        datLocation <- grep("uw_supplier",
+                    html_attr(html_nodes(pg, "a"), "href"),
+                    value = TRUE)[1]
+
+        url <- paste0("www.waterboards.ca.gov/water_issues/",
+                      "programs/conservation_portal/", datLocation)
+
+        download.file(url, "current_uw_supplier.xlsx", method = "curl")
+        current_file_name <- list.files(getwd(),
+                                        pattern = "current_uw_supplier")
+        
+        waterSupplierReport <- read_excel(current_file_name)
 
         colnames(waterSupplierReport) <- gsub(" ", "_",
                                               colnames(waterSupplierReport))
@@ -116,7 +119,7 @@ wc_funs$loadSupplierData <- function(reload = NULL, env = globalenv()){
                           month = as.numeric(substr(Reporting_Month, 6, 7)))
 
         ## supplier ID data:
-        wc_funs$loadSupplierIdData(reload = "y", env = environment())
+        loadSupplierIdData(reload = "y", env = environment())
         
         save(waterService_id,
              waterSupplierReport,
@@ -128,10 +131,21 @@ wc_funs$loadSupplierData <- function(reload = NULL, env = globalenv()){
 }
 
 
-## load dataframe linking Supplier_Name with PWSID_1
-wc_funs$loadSupplierIdData <- function(reload = NULL, env = globalenv()){
-    setwd(wc_funs$dataDirectory)
-    ans <- wc_funs$inquireReload("reload id data? ",
+#' Load Supplier ID Data
+#'
+#' load dataframe linking Supplier_Name with PWSID_1
+#' @param reload - y/n/null should data be reconstructed
+#' @param env - environment to load data into
+#' @param dataDirectory - character string of where the data is located
+#' @keywords
+#' @export
+#' @examples
+loadSupplierIdData <- function(reload = NULL, env = globalenv(),
+                               dataDirectory =
+                                   "~/Documents/greengov-challenge/Data/"){
+    setwd(dataDirectory)
+    require(helperFunctions)
+    ans <- inquire("reload id data? ",
                                  answer = reload)
     if(ans == "y"){
 
@@ -154,34 +168,59 @@ wc_funs$loadSupplierIdData <- function(reload = NULL, env = globalenv()){
     return(0)
 }
 
-## send a sql query to the waterQuality sqlite3
-## database
-wc_funs$sendQueryWaterQuality <- function(sql, con = NULL){
+#' Send Water Quality Query
+#'
+#' send a sql query to the waterQuality sqlite3 database
+#' @param sql character string of the query
+#' @param con supply to reuse a sql connection
+#' @keywords
+#' @export
+#' @examples
+sendQueryWaterQuality <- function(sql, con = NULL){
     if (is.null(con)) {
      con <- dbConnect(SQLite(),
-                    paste0(wc_funs$dataDirectory,
+                    paste0(dataDirectory,
                            "waterQuality"))   
     }
     dbSendQuery(con, sql)
 }
 
-wc_funs$getQueryWaterQuality <- function(sql, con = NULL){
+#' Get Water Quality Query
+#'
+#' get the results of a sql query to the water quality database
+#' @param sql character string of the query
+#' @param con supply to reuse a sql connection
+#' @keywords
+#' @export
+#' @examples
+getQueryWaterQuality <- function(sql, con = NULL){
     if (is.null(con)){
         con <- dbConnect(SQLite(),
-                        paste0(wc_funs$dataDirectory,
+                        paste0(dataDirectory,
                                "waterQuality"))
     }
     dbGetQuery(con, sql)
 }
 
-## query water quality data by dates
-## chemical, and or PWS_ID. Dates are
-## converted to julian.
-wc_funs$getWQData <- function(lwrBnd_date = "2015-1-1",
-                              uprBnd_date = "2016-4-12",
-                              date_format = "%Y-%m-%d",
-                              chemical = NULL,
-                              PWS_ID = NULL){
+
+#' Get Water Quality DAta
+#'
+#' query water quality data by dates
+#' chemical, and or PWS_ID. Dates are
+#' converted to julian.
+#' @param lwrBnd_date - character string of date
+#' @param uprBnd_date - character string of date
+#' @param date_format - the format of the given dates
+#' @param chemical - specify a chemical to select for
+#' @param PWS_ID - specify a water-supplier ID to select for
+#' @keywords
+#' @export
+#' @examples
+getWQData <- function(lwrBnd_date = "2015-1-1",
+                      uprBnd_date = "2016-4-12",
+                      date_format = "%Y-%m-%d",
+                      chemical = NULL,
+                      PWS_ID = NULL){
 
     ## check the date types and adjust accordingly
     if(!is.Date(lwrBnd_date) | !is.Date(uprBnd_date)){
@@ -198,7 +237,7 @@ wc_funs$getWQData <- function(lwrBnd_date = "2015-1-1",
     ## create
     chem_constraint <- ""
     if(!is.null(chemical)){
-        sn_resp <- wc_funs$getQueryWaterQuality(paste0("
+        sn_resp <- getQueryWaterQuality(paste0("
                      SELECT STORE_NUM
                      FROM storet
                      WHERE CHEMICAL__ = '", toupper(chemical),"'"))
@@ -213,7 +252,7 @@ wc_funs$getWQData <- function(lwrBnd_date = "2015-1-1",
     }
     
     db <- dbConnect(SQLite(),
-                    paste0(wc_funs$dataDirectory,
+                    paste0(dataDirectory,
                            "waterQuality"))
 
     ## assemble and send the sequence of queries
@@ -234,7 +273,7 @@ wc_funs$getWQData <- function(lwrBnd_date = "2015-1-1",
                       FROM storet
            ) AS b
            ON (a.STORE_NUM = b.STORE_NUMBER);")
-    wc_funs$sendQueryWaterQuality(sql, con = db)    
+    sendQueryWaterQuality(sql, con = db)    
     sql <- "CREATE TEMPORARY TABLE d2 AS
             SELECT *
             FROM d1 INNER JOIN (
@@ -244,7 +283,7 @@ wc_funs$getWQData <- function(lwrBnd_date = "2015-1-1",
                                FROM siteloc
             ) AS sl
             ON (d1.PRIM_STA_C = sl.PRI_STA_C);"
-    wc_funs$sendQueryWaterQuality(sql, con = db)
+    sendQueryWaterQuality(sql, con = db)
     sql <- paste0(
         "SELECT *
          FROM d2 INNER JOIN (", paste0("
@@ -280,45 +319,71 @@ wc_funs$getWQData <- function(lwrBnd_date = "2015-1-1",
     ## water standards for chemical contaminants as close to the corresponding
     ## PHG as is economically and technically feasible.
 
-    wc_funs$getQueryWaterQuality(sql, con = db) %>%
+    getQueryWaterQuality(sql, con = db) %>%
         dplyr::mutate(date = as.Date(SAMP_DATE, origin = "1970-01-01"),
-                      PWS_ID = paste0("CA", SYSTEM_NO)) %>%
+                      PWS_ID = paste0("CA", SYSTEM_NO),
+                      FINDING = as.numeric(FINDING),
+                      RPHL = as.numeric(RPHL),
+                      MCL = as.numeric(MCL)) %>%
         dplyr::select(date, SAMP_TIME, XMOD, FINDING, CHEMICAL__,
                       CLS, RPT_UNIT, MCL, RPHL, PWS_ID, WATER_TYPE,
                       COUNTY, HQNAME, CITY, ADDRESS, POP_SERV, CONNECTION,
                       AREA_SERVE)
 }
 
-## load the supplier-oriented water quality data
-wc_funs$loadSupplierWQData <- function(reload = NULL, env = globalenv()){
-    setwd(wc_funs$dataDirectory)
-    ans <- wc_funs$inquireReload("reload supplier Water Quality data? ",
+#' Load Supplier Water Quality Data
+#'
+#' load the supplier-oriented water quality data
+#' @param reload - y/n/null should data be reconstructed
+#' @param env - environment to load data into
+#' @param dataDirectory - character string of where the data is located
+#' @keywords
+#' @export
+#' @examples
+loadSupplierWQData <- function(reload = NULL, env = globalenv(),
+                               dataDirectory =
+                                   "~/Documents/greengov-challenge/Data/"){
+    setwd(dataDirectory)
+    require(helperFunctions)
+    ans <- inquire("reload supplier Water Quality data? ",
                                  answer = reload)
     if(ans == "y"){
         if(!exists("waterService_id")){
-            wc_funs$loadSupplierIdData(reload = "n", env = environment())
+            loadSupplierIdData(reload = "n", env = environment())
         }
         ids <- na.omit(unique(waterService_id$PWSID_1))
         
-        supplierWaterQualityData <- wc_funs$getWQData(PWS_ID = ids)
+        supplierWaterQualityData <- getWQData(PWS_ID = ids)
         save(supplierWaterQualityData, file = "supplierWaterQualityData.rda")
     }
     load("supplierWaterQualityData.rda", envir = env)
     return(0)
 }
 
-
-## load a summary of waste water violations and chemicals present
-## for each supplier
-wc_funs$loadSupplierSummaryData <- function(reload = NULL, env = globalenv(),
-                                            yield_top = 5){
-    setwd(wc_funs$dataDirectory)
-    ans <- wc_funs$inquireReload("reload supplier Water Quality data? ",
+#' Load Supplier Summary Data
+#'
+#' load a summary of waste water violations and chemicals present
+#' for each supplier
+#' @param reload - y/n/null should data be reconstructed
+#' @param env - environment to load data into
+#' @param dataDirectory - character string of where the data is located
+#' @param yield_top numeric - number of records to deliver for each supplier
+#' @keywords
+#' @export
+#' @examples
+loadSupplierSummaryData <- function(reload = NULL, env = globalenv(),
+                                    yield_top = 5,
+                                    dataDirectory = paste0("~/Documents/",
+                                                           "greengov-challenge",
+                                                           "/Data/"){
+    setwd(dataDirectory)
+    require(helperFunctions)
+    ans <- inquire("reload supplier Water Quality data? ",
                                  answer = reload)
     if(ans == "y"){
-        wc_funs$loadWasteWaterViolationsData(env = environment(),
+        loadWasteWaterViolationsData(env = environment(),
                                              reload = "n")
-        wc_funs$loadSupplierWQData(env = environment(),
+        loadSupplierWQData(env = environment(),
                                    reload = "n")
         ids <- wasteWaterServiceAreas %>%
             dplyr::select(facility_n, PWSID_1) %>%
@@ -339,11 +404,14 @@ wc_funs$loadSupplierSummaryData <- function(reload = NULL, env = globalenv(),
         waterQualitySummary <- supplierWaterQualityData %>%
             dplyr::filter(!(XMOD %in% c("<", "F", "I", "Q"))) %>%
             dplyr::group_by(PWS_ID, CHEMICAL__, RPT_UNIT) %>%
-            dplyr::summarise(av_meas = mean(FINDING)) %>%
+            dplyr::filter(FINDING > RPHL & RPHL > 0 ) %>%
+            dplyr::summarise(perc_gt_RPHL = (mean(FINDING) - max(RPHL)) /
+                                 max(RPHL),
+                             num_gt_RPHL = n()) %>%
             dplyr::ungroup() %>%
             dplyr::group_by(PWS_ID) %>%
-            dplyr::arrange(desc(av_meas)) %>%
-            dplyr::top_n(n = yield_top, wt = av_meas)
+            dplyr::arrange(desc(num_gt_RPHL)) %>%
+            dplyr::top_n(n = yield_top, wt = num_gt_RPHL)
 
         save(violationsSummary, waterQualitySummary,
              file = "SupplierSummaries.rda")
@@ -352,8 +420,14 @@ wc_funs$loadSupplierSummaryData <- function(reload = NULL, env = globalenv(),
     return(0)
 }
 
-## geocode an address with google api (2500 per day, 10 per sec)
-wc_funs$gmapsQuery <- function(address){
+#' Google Maps Query
+#'
+#' geocode an address with google api (2500 per day, 10 per sec)
+#' @param address character string of street address to geocode
+#' @keywords
+#' @export
+#' @examples
+gmapsQuery <- function(address){
     key = "AIzaSyClY2vHnR3j_cTUtvVCm58OBXAnv1VTWgY"
     req_string <- paste0("https://maps.googleapis.com/maps/api/geocode/json",
                          "?address=",
