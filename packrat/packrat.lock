@@ -38,6 +38,12 @@ Source: CRAN
 Version: 1.1-2
 Hash: c0d56cd15034f395874c870141870c25
 
+Package: RCurl
+Source: CRAN
+Version: 1.95-4.8
+Hash: 79c7d5a8684e44e0e3426d3093aa7d90
+Requires: bitops
+
 Package: RSQLite
 Source: CRAN
 Version: 2.0
@@ -228,6 +234,12 @@ Version: 1.3.5
 Hash: 2cc5284565b71276d1faf3d5c043fe4e
 Requires: Rcpp
 
+Package: httr
+Source: CRAN
+Version: 1.3.1
+Hash: 2d32e01e53d532c812052e27a1021441
+Requires: R6, curl, jsonlite, mime, openssl
+
 Package: igraph
 Source: CRAN
 Version: 1.1.2
@@ -306,6 +318,11 @@ Source: CRAN
 Version: 0.4.3
 Hash: f96d896947fcaf9b6d0074002e9f4f9d
 Requires: colorspace
+
+Package: openssl
+Source: CRAN
+Version: 0.9.7
+Hash: 225d43f64f60e8996d10efe15b381c66
 
 Package: packrat
 Source: CRAN
@@ -401,6 +418,12 @@ Version: 1.2
 Hash: fdcac51a7f47decd60556ceefc3c26b1
 Requires: backports
 
+Package: rvest
+Source: CRAN
+Version: 0.3.2
+Hash: c69f7526520bad66fd2111ebe8b1364b
+Requires: httr, magrittr, selectr, xml2
+
 Package: scales
 Source: github
 Version: 0.4.1.9002
@@ -411,6 +434,12 @@ GithubRepo: scales
 GithubUsername: hadley
 GithubRef: master
 GithubSha1: 6db7b6fa12b448129ef9380efa618d1963b4b0c9
+
+Package: selectr
+Source: CRAN
+Version: 0.3-1
+Hash: 367275e3dcdd208339e131c7a41bec56
+Requires: stringr
 
 Package: shiny
 Source: CRAN
@@ -478,6 +507,12 @@ GithubRepo: withr
 GithubUsername: jimhester
 GithubRef: master
 GithubSha1: 190d29348ad4621ab0ac6f185eb41f853188964d
+
+Package: xml2
+Source: CRAN
+Version: 1.1.1
+Hash: 534feed3c69280ec9529f1e54fd6c428
+Requires: BH, Rcpp
 
 Package: xtable
 Source: CRAN
