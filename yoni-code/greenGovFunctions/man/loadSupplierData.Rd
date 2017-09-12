@@ -17,4 +17,3 @@ loadSupplierData(reload = NULL, env = globalenv(),
 \description{
 load the water supplier data
 }
-

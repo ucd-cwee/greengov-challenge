@@ -17,4 +17,3 @@ loadWasteWaterViolationsData(reload = NULL, env = globalenv(),
 \description{
 get the waste water violations data
 }
-

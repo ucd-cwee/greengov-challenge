@@ -12,4 +12,3 @@ gmapsQuery(address)
 \description{
 geocode an address with google api (2500 per day, 10 per sec)
 }
-

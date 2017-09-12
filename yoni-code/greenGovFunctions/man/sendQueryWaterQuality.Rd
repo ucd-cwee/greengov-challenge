@@ -14,4 +14,3 @@ sendQueryWaterQuality(sql, con = NULL)
 \description{
 send a sql query to the waterQuality sqlite3 database
 }
-

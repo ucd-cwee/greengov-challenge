@@ -14,4 +14,3 @@ getQueryWaterQuality(sql, con = NULL)
 \description{
 get the results of a sql query to the water quality database
 }
-

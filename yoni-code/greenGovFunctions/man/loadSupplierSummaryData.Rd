@@ -5,7 +5,7 @@
 \title{Load Supplier Summary Data}
 \usage{
 loadSupplierSummaryData(reload = NULL, env = globalenv(), yield_top = 5,
-  dataDirectory = "~/Documents/greengov-challenge/Data/")
+  dataDirectory = paste0("~/Documents/", "greengov-challenge", "/Data/"))
 }
 \arguments{
 \item{reload}{- y/n/null should data be reconstructed}
@@ -20,4 +20,3 @@ loadSupplierSummaryData(reload = NULL, env = globalenv(), yield_top = 5,
 load a summary of waste water violations and chemicals present
 for each supplier
 }
-

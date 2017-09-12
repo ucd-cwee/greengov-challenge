@@ -23,4 +23,3 @@ query water quality data by dates
 chemical, and or PWS_ID. Dates are
 converted to julian.
 }
-
