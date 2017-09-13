@@ -441,6 +441,12 @@ Version: 0.3-1
 Hash: 367275e3dcdd208339e131c7a41bec56
 Requires: stringr
 
+Package: sf
+Source: CRAN
+Version: 0.5-4
+Hash: e3db69ada2a5fb84aa7ea78d248aabe9
+Requires: DBI, Rcpp, magrittr, units
+
 Package: shiny
 Source: CRAN
 Version: 1.0.5
@@ -487,6 +493,17 @@ Source: CRAN
 Version: 0.1.1
 Hash: b4a923c118b74d3e7ab54563b32d4ed9
 Requires: Rcpp, glue, rlang
+
+Package: udunits2
+Source: CRAN
+Version: 0.13
+Hash: 587587ec23c49271e0657fed726e7846
+
+Package: units
+Source: CRAN
+Version: 0.4-6
+Hash: 26637fde346198982175f763514832ff
+Requires: udunits2
 
 Package: viridis
 Source: CRAN
