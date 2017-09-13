@@ -16,11 +16,6 @@
         $("#water_districts-daterange").removeClass('hidden');
         $("#state-btn-statewide").prop('disabled', false);
       }
-      function nav_quality(e) {
-        $("#water_districts-daterange").addClass('hidden');
-        $("#state-btn-utility").click();
-        $("#state-btn-statewide").prop('disabled', true);
-      }
 
       var statewide = (function () {
           var counter = 0;
@@ -64,10 +59,7 @@
           <a href="#tab-1" data-toggle="tab" data-value="Conservation" onclick="nav_conservation();">Conservation</a>
         </li>
         <li>
-          <a href="#tab-2" data-toggle="tab" data-value="Quality" onclick="nav_quality();">Water Quality</a>
-        </li>
-        <li>
-          <a href="#tab-3" data-toggle="tab" data-value="Info">Info</a>
+          <a href="#tab-2" data-toggle="tab" data-value="Info">Info</a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -173,27 +165,20 @@
               </div>
             </div>
 
-            <!-- Water Quality Tab -->
-            <div class="tab-pane" data-value="Quality" id="tab-2">
-              <div class="row">
-                <div class="col-sm-12">
-                  <h2>Most Common Water Quality Violations</h2>
-                  {{ waterQualityOutput1('water_quality') }}
-                  <h2>Most Common Wastewater Violations</h2>
-                  {{ waterQualityOutput2('water_quality') }}
-                </div>
-              </div>
-            </div>
-
             <!-- Info Tab -->
-            <div class="tab-pane" data-value="Info" id="tab-3">
+            <div class="tab-pane" data-value="Info" id="tab-2">
               <div class="row">
                 <div class="col-sm-12">
 
-                  <h2>Background</h2>
+				  <h2>Background</h2>
                   <p>This application was created at the <a href="http://cwee.ucdavis.edu/" target="_blank">UC Davis Center for Water-Energy Efficiency</a> as
                     part of the <a href = http://www.waterboards.ca.gov/resources/data_databases/data_innov_challenge.shtml
                     target='_blank'>2016 CA Water Board Data Innovation Challenge</a>.</p>
+					
+				  <span style="color:red;">
+					  <h2>Status</h2>
+					  <p>September 12, 2017 - Modifications currently in progress to bring numbers and methodology up to date.</p>
+				  </span>
 
                   <h2>Project Summary</h2>
                   <p>
@@ -212,25 +197,18 @@
                     data was available for both initiatives). In addition, the water conservation-related GHG savings over the entire period of the mandate (June 2015 through
                     February 2016), represent the equivalent of taking about 50,000 cars off the road for a year.
                   </p>
-                  <p>
-                    In addition to the water conservation data, we prepared a few summary tables of the most common water quality testing and stormwater
-                    violation data for each utility. This data demonstrates how additional data could be integrated into the application to enrich the summary
-                    reports for each utility.
-                  </p>
 
                   <h2>References</h2>
                   <ol>
                     <li><a id='ref-1' href = 'http://www.waterboards.ca.gov/water_issues/programs/conservation_portal/conservation_reporting.shtml' target='_blank'>Water Conservation Reporting</a> (State Water Resources Control Board)</li>
                     <li><a id='ref-2' href = 'https://greengov.data.ca.gov/Location/CA-Water-District-Boundaries/2952-74g4' target='_blank'>CA Water District Boundaries</a> (GreenGov Portal)</li>
                     <li><a id='ref-3' href = 'http://www.energy.ca.gov/sb1305/labels/index.html' target='_blank'>CA Power Mix By Utility</a> (California Energy Commission)</li>
-                    <li><a id='ref-4' href = 'http://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/EDTlibrary.shtml' target='_blank'>Water Quality Testing Results</a> (State Water Resources Control Board)</li>
-                    <li><a id='ref-5' href = 'https://greengov.data.ca.gov/Water/Water-Board-Wastewater-Violations-2001-2016/j9ag-8iad' target='_blank'>Wastewater Violations</a> (GreenGov Portal)</li>
-                    <li><a id='ref-6' href = 'http://www.cpuc.ca.gov/WorkArea/DownloadAsset.aspx?id=5356' target='_blank'>Average Energy Intensity By Hydrologic Region</a> (California Public Utilities Commission)</li>
-                    <li><a id='ref-7' href = 'https://www.epa.gov/energy/egrid' target='_blank'>GHG Emissions By Fuel Type</a> (US EPA)</li>
-                    <li><a id='ref-8' href = 'http://eestats.cpuc.ca.gov/Default.aspx' target='_blank'>CA Energy Efficiency Programs Statistics</a> &mdash; Electricity Savings and Program Costs &mdash; (California Public Utilities Commission)</li>
-                    <li><a id='ref-9' href = 'http://www.waterboards.ca.gov/water_issues/programs/conservation_portal/docs/econ_impact_report_012216.pdf' target='_blank'>Cost of Conservation Mandate to Water Suppliers</a> &mdash; $75 per af &mdash; (State Water Resources Control Board)</li>
-                    <li><a id='ref-10'></a>Spang, Edward S., and Frank J. Loge. 2015. “A High-Resolution Approach to Mapping Energy Flows through Water Infrastructure Systems.” Journal of Industrial Ecology 19 (4). doi:10.1111/jiec.12240. <a href="http://doi.wiley.com/10.1111/jiec.12240" target='_blank'>http://doi.wiley.com/10.1111/jiec.12240</a>.</li>
-                    <li><a id='ref-11'></a>Discussion with Pete Skala, Energy Efficiency Program Manager, May 09, 2016.</li>
+                    <li><a id='ref-4' href = 'http://www.cpuc.ca.gov/WorkArea/DownloadAsset.aspx?id=5356' target='_blank'>Average Energy Intensity By Hydrologic Region</a> (California Public Utilities Commission)</li>
+                    <li><a id='ref-5' href = 'https://www.epa.gov/energy/egrid' target='_blank'>GHG Emissions By Fuel Type</a> (US EPA)</li>
+                    <li><a id='ref-6' href = 'http://eestats.cpuc.ca.gov/Default.aspx' target='_blank'>CA Energy Efficiency Programs Statistics</a> &mdash; Electricity Savings and Program Costs &mdash; (California Public Utilities Commission)</li>
+                    <li><a id='ref-7' href = 'http://www.waterboards.ca.gov/water_issues/programs/conservation_portal/docs/econ_impact_report_012216.pdf' target='_blank'>Cost of Conservation Mandate to Water Suppliers</a> &mdash; $75 per af &mdash; (State Water Resources Control Board)</li>
+                    <li><a id='ref-8'></a>Spang, Edward S., and Frank J. Loge. 2015. “A High-Resolution Approach to Mapping Energy Flows through Water Infrastructure Systems.” Journal of Industrial Ecology 19 (4). doi:10.1111/jiec.12240. <a href="http://doi.wiley.com/10.1111/jiec.12240" target='_blank'>http://doi.wiley.com/10.1111/jiec.12240</a>.</li>
+                    <li><a id='ref-9'></a>Discussion with Pete Skala, Energy Efficiency Program Manager, May 09, 2016.</li>
                   </ol>
 
                   <h2>Detailed Methodology for Statewide Water-Energy Calculation</h2>
@@ -250,19 +228,19 @@
                     </ul>
                     <b>Cost per Unit Electricity Saved</b>
                     <ul>
-                      <li>A recent SWRCB report [<a href="#ref-9">9</a>] (Table 4, p.23) estimates that the cost of water conservation to water suppliers (not including lost revenue) is roughly $75/acre-foot.</li>
+                      <li>A recent SWRCB report [<a href="#ref-7">7</a>] (Table 4, p.23) estimates that the cost of water conservation to water suppliers (not including lost revenue) is roughly $75/acre-foot.</li>
                       <li>Using this number, we estimated the cost per GWH of electricity savings achieved through water conservation.</li>
                     </ul>
                     <b>Comparative Electricity Savings from IOU Energy Efficiency Programs</b>
                     <ul>
-                      <li>We used the quarterly energy savings data collected from the CA Public Utilities Commission website [<a href="#ref-8">8</a>] on Energy Efficiency Program Data. Specifically, we queried time series (by quarter) electricity savings data by end use to find the electricity savings associated with Q3 2015.</li>
+                      <li>We used the quarterly energy savings data collected from the CA Public Utilities Commission website [<a href="#ref-6">6</a>] on Energy Efficiency Program Data. Specifically, we queried time series (by quarter) electricity savings data by end use to find the electricity savings associated with Q3 2015.</li>
                     </ul>
 
                   <h2>Key Considerations</h2>
                   <p>The comparison between the estimated electricity saved through water conservation and the electricity saved through the IOU EE programs is complicated by a number of differences in how the data are collected and presented as well as a number of assumptions made by the research team and the studies on which they relied.</p>
                   <ul>
-                    <li>Energy intensity is much more nuanced [<a href="#ref-10">10</a>] between (and even within) water agencies than is provided by the energy intensity estimates by hydrologic zone from the Navigant Consulting report.</li>
-                    <li>The vast majority of the electricity savings through the IOU EE Programs represents investments in EE hardware with potentially greater persistence than the observed water savings, which may have a much higher behavioral component. [<a href="#ref-11">11</a>]</li>
+                    <li>Energy intensity is much more nuanced [<a href="#ref-8">8</a>] between (and even within) water agencies than is provided by the energy intensity estimates by hydrologic zone from the Navigant Consulting report.</li>
+                    <li>The vast majority of the electricity savings through the IOU EE Programs represents investments in EE hardware with potentially greater persistence than the observed water savings, which may have a much higher behavioral component. [<a href="#ref-9">9</a>]</li>
                     <li>The electricity savings listed on the CPUC website actually represents the entire first-year savings for investments made in that single quarter, so is not directly comparable to water-based electricity savings. However, as a proxy to include the energy savings from the previous three quarters of investment, we included the full first year electricity savings from the Q3 investments as the full Q3 electricity savings.</li>
                     <li>Both estimates are aligned in terms of comparing the electricity savings (through water conservation and through EE programs) as only IOU energy savings and not POU electricity savings.</li>
                   </ul>

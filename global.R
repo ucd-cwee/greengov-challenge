@@ -8,9 +8,6 @@ water_byMonth <- readRDS('data/water_byMonth_new.rds')
 statewide_byMonth <- readRDS('data/statewide_byMonth_new.rds')
 water_districts <- readRDS('data/water_districts_new.rds')
 
-water_quality_summary <- readRDS('data/water_quality_summary.rds')
-violations_summary <- readRDS('data/violations_summary.rds')
-
 # Energy Savings data
 appliance_data <- list(name = "Appliance", color = '#f45b5b', data = list(list(y = 27.21), list(y = 0)))
 hvac_data <- list(name = "HVAC", color = '#434348', data = list(list(y = 50.76), list(y = 0)))
@@ -50,5 +47,4 @@ waterenergy_costperkwh_data <- list(name = "Water Conservation", color = '#3E7DC
 
 # load modules
 source('modules/water_district_map.R')
-source('modules/water_quality.R')
 

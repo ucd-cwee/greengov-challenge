@@ -12,10 +12,6 @@ function(input, output, session) {
                      map_data = water_districts, id_field = 'PWS_ID', name_field = 'PWS_name',
                      statewide = reactive(vals$statewide))
   
-  callModule(waterQuality, "water_quality", quality_data = water_quality_summary,
-             violation_data = violations_summary, id_field = 'PWS_ID',
-             current_id = reactive(input$`water_districts-utility`))
-  
   # output values
   
   #hcdata_byQuarter <- function(x) { x$data[[1]]$y <- x$data[[1]]$y / 4; x }
