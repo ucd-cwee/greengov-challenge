@@ -78,8 +78,7 @@ function(input, output, session) {
   })
 
   output$n_cars <- reactive({
-    # FIXME
-    format(round(savings()$MT_CO2e_saved_all * 2.20462 / 9737.44), big.mark = ",", scientific = FALSE)
+    format(round(savings()$MT_CO2e_saved_all / avg_car_mt_CO2), big.mark = ",", scientific = FALSE)
   })
   
   
