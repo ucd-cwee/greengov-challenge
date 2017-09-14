@@ -1,12 +1,28 @@
 
-library('sp')
+library('shiny')
+library('sf')
 library('dplyr')
 
-# load data
-util_summary <- readRDS('data/util_summary_new.rds')
-water_byMonth <- readRDS('data/water_byMonth_new.rds')
-statewide_byMonth <- readRDS('data/statewide_byMonth_new.rds')
-water_districts <- readRDS('data/water_districts_new.rds')
+# get info about current environment -------------------------------------------
+
+islocal <- Sys.getenv('SHINY_PORT') == ""
+if (!islocal) options(shiny.sanitize.errors = TRUE)
+
+# conversion factors -----------------------------------------------------------
+
+# pounds per 1 kilogram
+lbs_per_kg <- 2.20462262185
+
+# eGRID emissions factor estimate for the CAMX subgrid (lb CO2e/MWh)
+ghg_factor_lb_mwh <- 570.489
+ghg_factor_kg_mwh <- ghg_factor_lb_mwh / lbs_per_kg
+
+# load data --------------------------------------------------------------------
+
+water_byMonth <- readRDS('data/water_byMonth_pub.rds')
+util_summary <- readRDS('data/util_summary_pub.rds')
+statewide_byMonth <- readRDS('data/statewide_byMonth_pub.rds')
+water_districts <- readRDS('data/water_districts_pub.rds')
 
 # Energy Savings data
 appliance_data <- list(name = "Appliance", color = '#f45b5b', data = list(list(y = 27.21), list(y = 0)))
@@ -19,8 +35,8 @@ refrigeration_data <- list(name = "Refrigeration", color = '#e4d354', data = lis
 wholebuilding_data <- list(name = "Whole Building", color = '#2b908f', data = list(list(y = 29.69), list(y = 0)))
 
 q3_2015_we_sav <- statewide_byMonth %>%
-  filter(date %in% lapply(c('2015-07-15', '2015-08-15', '2015-09-15'), as.Date)) %>%
-  summarise(GWh_saved = sum(MWh_saved) / 1000)
+  filter(ReportingMonth %in% lapply(c('2015-07-15', '2015-08-15', '2015-09-15'), as.Date)) %>%
+  summarise(GWh_saved = sum(MWh_saved_all) / 1000)
 waterenergy_data <- list(name = "Water Conservation", color = '#3E7DC1', data = list(list(y = 0), list(y = q3_2015_we_sav$GWh_saved)))
 
 # Cost Savings data
@@ -34,8 +50,8 @@ refrigeration_cost_data <- list(name = "Refrigeration", color = '#e4d354', data 
 wholebuilding_cost_data <- list(name = "Whole Building", color = '#2b908f', data = list(list(y = 20.4), list(y = 0)))
 
 q3_2015_we_cost_sav <- statewide_byMonth %>%
-  filter(date %in% lapply(c('2015-07-15', '2015-08-15', '2015-09-15'), as.Date)) %>%
-  summarise(change_af = sum(change_gal) / 325851)
+  filter(ReportingMonth %in% lapply(c('2015-07-15', '2015-08-15', '2015-09-15'), as.Date)) %>%
+  summarise(change_af = sum(MG_saved) / 0.325851)
 waterenergy_cost_data <- list(name = "Water Conservation", color = '#3E7DC1', data = list(list(y = 0), list(y = q3_2015_we_cost_sav$change_af * 75 / 1e6)))
 
 # Cost per kWh Savings data
@@ -44,7 +60,5 @@ ee_costperkwh_data <- list(name = "Energy Efficiency Programs", color = '#F4855E
 waterenergy_costperkwh_data <- list(name = "Water Conservation", color = '#3E7DC1',
                                     data = list(list(y = 0), list(y = (q3_2015_we_cost_sav$change_af * 75 / 1e6) / q3_2015_we_sav$GWh_saved)))
 
-
-# load modules
+# load modules -----------------------------------------------------------------
 source('modules/water_district_map.R')
-

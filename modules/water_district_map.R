@@ -52,7 +52,7 @@ waterConservation <- function(input, output, session,
   vals <- reactiveValues(last_util = '', from_menu = TRUE, still_statewide = FALSE)
   
   # all utilities
-  allUtil_df <- unique(water_summary[,c(id_field, name_field)])
+  allUtil_df <- unique(water_summary[, c(id_field, name_field)])
   allUtil <- setNames(allUtil_df[[id_field]], allUtil_df[[name_field]])
   allUtil_ord <- allUtil[order(names(allUtil))]
   
@@ -74,16 +74,16 @@ waterConservation <- function(input, output, session,
     if (selected_util == 'statewide') {
       ret <- statewide_monthly
     } else {
-      ret <- water_monthly[water_monthly[,id_field] == selected_util,]
+      ret <- water_monthly[water_monthly[, id_field] == selected_util, ]
     }
-    unique(ret[complete.cases(ret),])
+    ret
   })
   
   # update UI control
   output$daterange <- renderUI({
     ns <- session$ns
-    sliderInput(ns('daterange'), label = "Date Range", min = as.Date('2015-6-1'), max = as.Date('2016-4-30'),
-                value = c(as.Date('2015-6-1'), as.Date('2016-4-30')), timeFormat = "%b %Y")
+    sliderInput(ns('daterange'), label = "Date Range", min = as.Date('2015-6-1'), max = as.Date('2016-5-31'),
+                value = c(as.Date('2015-6-1'), as.Date('2016-5-31')), timeFormat = "%b %Y")
   })
   
   # Map --------------------------------------------------------------------
@@ -91,13 +91,15 @@ waterConservation <- function(input, output, session,
   output$map <- renderLeaflet({
     
     #colorBin("Spectral", domain = c(0,6))(0:5)
-    pal <- colorBin(rev(c("#A50026","#F46D43","#FEE090","#E0F3F8","#74ADD1","#313695")), domain = map_data$sav_diff, bins = c(-0.3,-0.2,-0.1,0,0.1,0.2,0.3))
+    pal <- colorBin(rev(c("#A50026","#F46D43","#FEE090","#E0F3F8","#74ADD1","#313695")),
+                    domain = map_data$sav_diff,
+                    bins = c(-0.3,-0.2,-0.1,0,0.1,0.2,0.3))
     
     leaflet(map_data) %>%
       addProviderTiles("CartoDB.PositronNoLabels") %>% 
       addProviderTiles("Stamen.TonerLabels") %>%
-      addPolygons(layerId = ~PWS_ID, color = '#444', weight = 1,
-                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo) %>%
+      addPolygons(layerId = ~pwsid, color = '#444', weight = 1,
+                  fillColor = ~pal(sav_diff), fillOpacity = 0.7, label = ~pwsname) %>%
       addLegend("bottomleft", pal = pal, values = ~sav_diff,
                 title = "Missed Target by",
                 opacity = 1, labFormat = labelFormat(prefix = '(', suffix = ')%', between = ', ', transform = function(x) 100 * x))
@@ -128,26 +130,27 @@ waterConservation <- function(input, output, session,
       
       # update last poly
       if (vals$last_util != '') {
-        last_selectedPoly <- map_data[map_data@data[,id_field] == vals$last_util,]
+        last_selectedPoly <- map_data[map_data[[id_field]] == vals$last_util, ]
         if (nrow(last_selectedPoly) > 0) {
           leafletProxy(ns('map')) %>% 
-          addPolygons(data = last_selectedPoly, layerId = ~PWS_ID, color = '#444', weight = 1,
-                      fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
+          addPolygons(data = last_selectedPoly, layerId = ~pwsid, color = '#444', weight = 1,
+                      fillColor = ~pal(sav_diff), fillOpacity = 0.7, label = ~pwsname)
         }
       }
       
       # update selected poly
-      selectedPoly <- map_data[map_data@data[,id_field] == selected_util,]
-      b <- selectedPoly@bbox
+      selectedPoly <- map_data[map_data[[id_field]] == selected_util, ]
+      b <- st_bbox(selectedPoly)
       if (nrow(selectedPoly) > 0) {
         leafletProxy(ns('map')) %>% 
-          addPolygons(data = selectedPoly, layerId = ~PWS_ID, color = '#000', weight = 2,
-                      fillColor = ~pal(sav_diff), fillOpacity = 0.7, label= ~PWS_name_geo)
+          addPolygons(data = selectedPoly, layerId = ~pwsid, color = '#000', weight = 2,
+                      fillColor = ~pal(sav_diff), fillOpacity = 0.7, label = ~pwsname)
       }
       vals$last_util <- selected_util
       
       # if util was selected from menu, then update map view
-      if (vals$from_menu) { leafletProxy(ns('map')) %>% fitBounds(b['x','min'], b['y','min'],b['x','max'], b['y','max']) }
+      b <- unname(b)
+      if (vals$from_menu) { leafletProxy(ns('map')) %>% fitBounds(b[1], b[2], b[3], b[4]) }
       vals$from_menu <- TRUE
     }
     
@@ -164,25 +167,25 @@ waterConservation <- function(input, output, session,
     isolate({
       # data
       util_d <- util_data() %>%
-        mutate(year = year(date),
-               month = month(date, label = TRUE),
-               month_start = floor_date(date, 'month'),
-               month_end = ceiling_date(date, unit = 'month') - 1) %>% 
+        mutate(year = year(ReportingMonth),
+               month = month(ReportingMonth, label = TRUE),
+               month_start = floor_date(ReportingMonth, 'month'),
+               month_end = ceiling_date(ReportingMonth, unit = 'month') - 1) %>% 
         group_by(year, month, month_start, month_end) %>% 
-        summarise(gal_2013 = sum(gal_2013),
-                  gal_cur = sum(gal_cur)) %>% 
-        mutate(selected = between(month_start, input$daterange[1], input$daterange[2]) | between(month_end, input$daterange[1], input$daterange[2]),
+        summarise(MG_2013 = sum(MG_2013),
+                  MG_cur = sum(MG_cur)) %>% 
+        mutate(selected = between(as.Date(month_start), input$daterange[1], input$daterange[2]) | between(as.Date(month_end), input$daterange[1], input$daterange[2]),
                selected = ifelse(is.na(selected), FALSE, selected)) %>% 
         filter(selected) %>% 
-        select(year, month, month_start, month_end, gal_cur, selected) %>%
+        select(year, month, month_start, month_end, MG_cur, selected) %>%
         split(.$year) %>% 
         map(~ right_join(., data.frame(month = factor(month.abb, levels = month.abb, ordered = TRUE)), by = 'month'))
       
       util_d_2013 <- util_data() %>%
-        mutate(month = month(date, label = TRUE)) %>% 
+        mutate(month = month(ReportingMonth, label = TRUE)) %>% 
         group_by(month) %>% 
-        summarise(gal_2013 = sum(gal_2013)) %>% 
-        select(month, gal_2013) %>% 
+        summarise(MG_2013 = sum(MG_2013)) %>% 
+        select(month, MG_2013) %>% 
         distinct() %>% 
         right_join(data.frame(month = factor(month.abb, levels = month.abb, ordered = TRUE)), by = 'month')
       
@@ -202,7 +205,7 @@ waterConservation <- function(input, output, session,
         hc_title(text = "Water Production") %>% 
         hc_xAxis(categories = month.abb) %>% 
         hc_yAxis(title = list(text = "Million Gallons")) %>% 
-        hc_add_series(name = '2013', data =  util_d_2013$gal_2013 / 1e6, color = '#000000', animation = animate) %>% 
+        hc_add_series(name = '2013', data =  util_d_2013$MG_2013, color = '#000000', animation = animate) %>% 
         hc_tooltip(crosshairs = TRUE, shared = TRUE,
                    formatter = JS("function () {
                                     var s = '<b>' + this.x + '</b>';
@@ -221,10 +224,10 @@ waterConservation <- function(input, output, session,
         hc_plotOptions(column = list(pointPadding = 0))
       
       years <- c('2015','2016')
-      series_colors <- c(`2015` = '#717CFF', `2016` = '#69B245') # '#FF9C71'
+      series_colors <- c(`2015` = '#717CFF', `2016` = '#69B245')
       for (yr in years) {
         #cols <- substr(ifelse(util_d[[yr]]$selected, series_colors[yr], adjustcolor(series_colors[yr], red.f = 2, green.f = 2, blue.f = 2)), 1, 7)
-        hc <- hc %>% hc_add_series(name = yr, data =  util_d[[yr]]$gal_cur / 1e6,
+        hc <- hc %>% hc_add_series(name = yr, data =  util_d[[yr]]$MG_cur,
                                    color = unname(series_colors[yr]), animation = animate)
       }
       
@@ -235,7 +238,13 @@ waterConservation <- function(input, output, session,
   # return (reactive function with) selected utility data --------------------
   reactive({
     validate(need(input$daterange, message = FALSE))
-    util_data() %>% mutate(selected = between(floor_date(date, unit = 'month'), input$daterange[1], input$daterange[2]) | between(ceiling_date(date, unit = 'month') - 1, input$daterange[1], input$daterange[2]))
+    util_data() %>%
+      mutate(selected = between(floor_date(as.Date(ReportingMonth), unit = 'month'),
+                                input$daterange[1],
+                                input$daterange[2]) | 
+                        between(ceiling_date(as.Date(ReportingMonth), unit = 'month') - 1,
+                                input$daterange[1],
+                                input$daterange[2]))
   })
   
 }
