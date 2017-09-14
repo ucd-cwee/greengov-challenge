@@ -4,12 +4,16 @@ function(input, output, session) {
   # for easier debugging
   if (islocal) source('modules/water_district_map.R')
   
+  
+  # session state --------------------------------------------------------------
+  
   # handle selection of statewide vs utility view
   vals <- reactiveValues(statewide = TRUE)
   observeEvent(input$view_statewide, {vals$statewide <- TRUE})
   observeEvent(input$view_utility, {vals$statewide <- FALSE})
   
-  # call modules
+  
+  # module ---------------------------------------------------------------------
   util <- callModule(waterConservation, "water_districts",
                      water_monthly = water_byMonth,
                      statewide_monthly = statewide_byMonth,
@@ -18,8 +22,69 @@ function(input, output, session) {
                      name_field = 'pwsname',
                      statewide = reactive(vals$statewide))
   
-  # # output values
-  # 
+  
+  # summary panels -------------------------------------------------------------
+  
+  # total savings for current selection (util/state & time period)
+  savings <- reactive({
+
+    if (vals$statewide) {
+      ret <- util() %>%
+        filter(selected) %>%
+        summarise(MG_2013 = sum(MG_2013, na.rm = TRUE),
+                  MG_cur = sum(MG_cur, na.rm = TRUE),
+                  MG_saved = sum(MG_saved, na.rm = TRUE),
+                  MWh_saved_all = sum(MWh_saved_all, na.rm = TRUE),
+                  MT_CO2e_saved_all = sum(MT_CO2e_saved_all, na.rm = TRUE)) %>%
+        mutate(change_prop = MG_saved / MG_2013,
+               proportionChangeGoal = 0.25,
+               sav_diff = change_prop - proportionChangeGoal)
+    } else {
+      ret <- util() %>%
+        filter(selected) %>%
+        group_by(pwsid, out_iou_kWh_mg, out_all_kWh_mg) %>%
+        summarise(proportionChangeGoal = mean(ConservationStandard),
+                  MG_2013 = sum(MG_2013),
+                  MG_cur = sum(MG_cur)) %>%
+        mutate(MG_saved = MG_2013 - MG_cur,
+               change_prop = MG_saved / MG_2013,
+               sav_diff = change_prop - proportionChangeGoal,
+               kWh_saved_all = MG_saved * out_all_kWh_mg,
+               MWh_saved_all = kWh_saved_all / 1e3,
+               MT_CO2e_saved_all = MWh_saved_all * ghg_factor_kg_mwh / 100)
+    }
+
+    ret
+  })
+
+  output$savings <- reactive({
+    sprintf('%.1f%% (goal: %.f%%)', savings()$change_prop * 100, savings()$proportionChangeGoal * 100)
+  })
+
+  output$vs_std <- reactive({
+    sprintf('%+.1f%%', savings()$sav_diff * 100)
+  })
+
+  output$vs_std_label <- reactive({
+    switch(as.character(sign(savings()$sav_diff)), '-1' = '(Missed Target)', '0' = '(Met Target)', '1' = '(Savings Exceeding Target)', 'Vs Target')
+  })
+
+  output$energy <- reactive({
+    paste(format(round(savings()$MWh_saved_all), big.mark = ",", scientific = FALSE), 'MWh')
+  })
+
+  output$ghg <- reactive({
+    paste(format(round(savings()$MT_CO2e_saved_all), big.mark = ",", scientific = FALSE), 'MT CO2e')
+  })
+
+  output$n_cars <- reactive({
+    # FIXME
+    format(round(savings()$MT_CO2e_saved_all * 2.20462 / 9737.44), big.mark = ",", scientific = FALSE)
+  })
+  
+  
+  # summary charts -------------------------------------------------------------
+  
   # #hcdata_byQuarter <- function(x) { x$data[[1]]$y <- x$data[[1]]$y / 4; x }
   # 
   # output$energy_barchart <- renderHighchart({
@@ -80,61 +145,5 @@ function(input, output, session) {
   #     hc_plotOptions(column = list(stacking = 'normal')) %>% 
   #     hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + '$' + this.y.toFixed(2); }"))
   # })
-  
-  savings <- reactive({
 
-    if (vals$statewide) {
-      ret <- util() %>%
-        filter(selected) %>%
-        summarise(MG_2013 = sum(MG_2013, na.rm = TRUE),
-                  MG_cur = sum(MG_cur, na.rm = TRUE),
-                  MG_saved = sum(MG_saved, na.rm = TRUE),
-                  MWh_saved_all = sum(MWh_saved_all, na.rm = TRUE),
-                  MT_CO2e_saved_all = sum(MT_CO2e_saved_all, na.rm = TRUE)) %>%
-        mutate(change_prop = MG_saved / MG_2013,
-               proportionChangeGoal = 0.25,
-               sav_diff = change_prop - proportionChangeGoal)
-    } else {
-      ret <- util() %>%
-        filter(selected) %>%
-        group_by(pwsid, out_iou_kWh_mg, out_all_kWh_mg) %>%
-        summarise(proportionChangeGoal = mean(ConservationStandard),
-                  MG_2013 = sum(MG_2013),
-                  MG_cur = sum(MG_cur)) %>%
-        mutate(MG_saved = MG_2013 - MG_cur,
-               change_prop = MG_saved / MG_2013,
-               sav_diff = change_prop - proportionChangeGoal,
-               kWh_saved_all = MG_saved * out_all_kWh_mg,
-               MWh_saved_all = kWh_saved_all / 1e3,
-               MT_CO2e_saved_all = MWh_saved_all * ghg_factor_kg_mwh / 100)
-    }
-
-    ret
-  })
-
-  output$savings <- reactive({
-    sprintf('%.1f%% (goal: %.f%%)', savings()$change_prop * 100, savings()$proportionChangeGoal * 100)
-  })
-
-  output$vs_std <- reactive({
-    sprintf('%+.1f%%', savings()$sav_diff * 100)
-  })
-
-  output$vs_std_label <- reactive({
-    switch(as.character(sign(savings()$sav_diff)), '-1' = '(Missed Target)', '0' = '(Met Target)', '1' = '(Savings Exceeding Target)', 'Vs Target')
-  })
-
-  output$energy <- reactive({
-    paste(format(round(savings()$MWh_saved_all), big.mark = ",", scientific = FALSE), 'MWh')
-  })
-
-  output$ghg <- reactive({
-    paste(format(round(savings()$MT_CO2e_saved_all), big.mark = ",", scientific = FALSE), 'MT CO2e')
-  })
-
-  output$n_cars <- reactive({
-    # FIXME
-    format(round(savings()$MT_CO2e_saved_all * 2.20462 / 9737.44), big.mark = ",", scientific = FALSE)
-  })
-  
 }
