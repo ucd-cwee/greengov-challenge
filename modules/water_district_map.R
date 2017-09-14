@@ -47,12 +47,12 @@ waterConservationOutput2 <- function(id) {
 
 # module server function
 waterConservation <- function(input, output, session,
-                              water_summary, water_monthly, statewide_monthly, map_data, id_field, name_field, statewide) {
+                              water_monthly, statewide_monthly, map_data, id_field, name_field, statewide) {
   
   vals <- reactiveValues(last_util = '', from_menu = TRUE, still_statewide = FALSE)
   
   # all utilities
-  allUtil_df <- unique(water_summary[, c(id_field, name_field)])
+  allUtil_df <- unique(water_monthly[, c(id_field, name_field)])
   allUtil <- setNames(allUtil_df[[id_field]], allUtil_df[[name_field]])
   allUtil_ord <- allUtil[order(names(allUtil))]
   

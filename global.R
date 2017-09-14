@@ -20,7 +20,6 @@ ghg_factor_kg_mwh <- ghg_factor_lb_mwh / lbs_per_kg
 # load data --------------------------------------------------------------------
 
 water_byMonth <- readRDS('data/water_byMonth_pub.rds')
-util_summary <- readRDS('data/util_summary_pub.rds')
 statewide_byMonth <- readRDS('data/statewide_byMonth_pub.rds')
 water_districts <- readRDS('data/water_districts_pub.rds')
 

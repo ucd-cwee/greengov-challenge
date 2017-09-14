@@ -10,9 +10,12 @@ function(input, output, session) {
   observeEvent(input$view_utility, {vals$statewide <- FALSE})
   
   # call modules
-  util <- callModule(waterConservation, "water_districts", water_summary = util_summary,
-                     water_monthly = water_byMonth, statewide_monthly = statewide_byMonth,
-                     map_data = water_districts, id_field = 'pwsid', name_field = 'pwsname',
+  util <- callModule(waterConservation, "water_districts",
+                     water_monthly = water_byMonth,
+                     statewide_monthly = statewide_byMonth,
+                     map_data = water_districts,
+                     id_field = 'pwsid',
+                     name_field = 'pwsname',
                      statewide = reactive(vals$statewide))
   
   # # output values
@@ -94,7 +97,6 @@ function(input, output, session) {
     } else {
       ret <- util() %>%
         filter(selected) %>%
-        #left_join(util_summary, by = 'pwsid') %>%
         group_by(pwsid, out_iou_kWh_mg, out_all_kWh_mg) %>%
         summarise(proportionChangeGoal = mean(ConservationStandard),
                   MG_2013 = sum(MG_2013),
