@@ -84,30 +84,22 @@ function(input, output, session) {
   
   # summary charts -------------------------------------------------------------
   
-  # #hcdata_byQuarter <- function(x) { x$data[[1]]$y <- x$data[[1]]$y / 4; x }
-  # 
-  # output$energy_barchart <- renderHighchart({
-  #   highchart() %>% 
-  #     hc_chart(type = "column") %>% 
-  #     hc_title(text = "Electricity Savings from Statewide Water Conservation vs. Total First-Year Electricity Savings from Energy IOU Efficiency Programs<br/><b>(Jul - Sep 2015)</b>",
-  #              style = list(fontSize = '14px', useHTML = TRUE)) %>% 
-  #     hc_xAxis(categories = c('Energy Efficiency Programs<br/>by End Use Category', 'Energy Savings Resulting<br>from Water Conservation')) %>% 
-  #     hc_yAxis(title = list(text = "GWh Energy Saved"),
-  #              stackLabels = list(enabled = TRUE, style = list(fontWeight = 'bold', color = 'gray'),
-  #                                 formatter = JS('function() { return this.total.toFixed(1) + " GWh"; }'))) %>% 
-  #     hc_series(appliance_data,
-  #               hvac_data,
-  #               indoorlighting_data,
-  #               other_data,
-  #               outdoorlighting_data,
-  #               process_data,
-  #               refrigeration_data,
-  #               wholebuilding_data,
-  #               waterenergy_data) %>% 
-  #     hc_plotOptions(column = list(stacking = 'normal')) %>% 
-  #     hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + this.y.toFixed(1) + ' GWh'; }"))
-  # })
-  # 
+  output$energy_barchart <- renderHighchart({
+    hchart(eedata_sav_summary, type = "column", hcaes(x = type, y = Gross_GWh, group = EndUse)) %>%
+      hc_title(text = "Electricity Savings from Statewide Water Conservation vs. Total First-Year Electricity Savings from Energy IOU Efficiency Programs<br/><b>(Jul 2015 - June 2016)</b>",
+               style = list(fontSize = '14px', useHTML = TRUE)) %>%
+      hc_xAxis(title = NULL
+               # categories = c('Energy Efficiency Programs<br/>by End Use Category',
+               #                'IOU Energy Savings Resulting<br>from Water Conservation',
+               #                'Total Energy Savings Resulting<br>from Water Conservation')
+      ) %>%
+      hc_yAxis(title = list(text = "GWh Energy Saved"),
+               stackLabels = list(enabled = TRUE, style = list(fontWeight = 'bold', color = 'gray'),
+                                  formatter = JS('function() { return this.total.toFixed(1) + " GWh"; }'))) %>%
+      hc_plotOptions(column = list(stacking = 'normal', borderWidth = 0)) %>%
+      hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + this.y.toFixed(1) + ' GWh'; }"))
+  })
+
   # output$cost_barchart <- renderHighchart({
   #   highchart() %>% 
   #     hc_chart(type = "column") %>% 
