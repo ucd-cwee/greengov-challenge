@@ -110,7 +110,8 @@ function(input, output, session) {
   output$cost_barchart <- renderHighchart({
     elec_ce_data <- elec_ce_plot_data %>% arrange(-lcoe_dol2015_MWh_dr)
     hchart(elec_ce_data, type = "bar", hcaes(x = program, y = lcoe_dol2015_MWh_dr, color = col)) %>%
-      hc_xAxis(title = NULL) %>%
+      hc_xAxis(title = NULL,
+               labels = list(formatter = JS('function() { return this.value.includes("Water") ? "<strong>" + this.value + "</strong>" : this.value; }'))) %>%
       hc_yAxis(title = list(text = "Levelized Cost of Electricity Savings ($/MWh)"),
                max = 275) %>%
       hc_plotOptions(bar = list(
