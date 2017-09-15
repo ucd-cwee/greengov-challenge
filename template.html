@@ -31,7 +31,7 @@
         $("#water_districts-utility").parent().addClass('pseudo-hide');
         $("#map-col").addClass('hidden');
         $("#ghg-col").removeClass('hidden');
-        $("#ghg-cars-col").removeClass('pseudo-hide');
+        $("#ghg-info").removeClass('pseudo-hide');
         $(window).trigger('resize');
       }
       function show_utility(e) {
@@ -40,7 +40,7 @@
         $("#water_districts-utility").parent().removeClass('pseudo-hide');
         $("#map-col").removeClass('hidden pseudo-hide');
         $("#ghg-col").addClass('hidden');
-        $("#ghg-cars-col").addClass('pseudo-hide');
+        $("#ghg-info").addClass('pseudo-hide');
         $(window).trigger('resize');
       }
     </script>
@@ -109,12 +109,12 @@
                   <div class="caption">{{ textOutput('vs_std_label') }}</div>
                 </div></div>
                 <div class="col-sm-3 infobox-outer"><div class="infobox-inner energy-info">
-                  <div class="value">{{ textOutput('energy') }}</div>
-                  <div class="caption">Resulting Electricity Savings</div>
+                  <div class="value">{{ textOutput('energy_all') }}</div>
+                  <div class="caption">Resulting Electricity Savings - <strong>Total</strong></div>
                 </div></div>
-                <div class="col-sm-3 infobox-outer"><div class="infobox-inner ghg-info">
-                  <div class="value">{{ textOutput('ghg') }}</div>
-                  <div class="caption">Resulting GHG Savings</div>
+                <div class="col-sm-3 infobox-outer"><div class="infobox-inner energy-info">
+                  <div class="value">{{ textOutput('energy_iou') }}</div>
+                  <div class="caption">Resulting Electricity Savings - <strong>IOU</strong></div>
                 </div></div>
               </div>
               <!-- main output row -->
@@ -126,11 +126,17 @@
                   </div>
                 </div>
                 <!-- GHG info -->
-                <div id = "ghg-cars-col" class="col-sm-6 infobox-outer"><div class="infobox-inner ghg-info">
-                  <div class="caption">Estimated GHG emissions reduction equivalent to taking…</div>
-                  <div class="value">{{ textOutput('n_cars') }}</div>
-                  <div class="caption">Cars Off the Road for a Year</div>
-                </div></div>
+				<div id = "ghg-info">
+					<div id = "ghg-value" class="col-sm-3 infobox-outer"><div class="infobox-inner ghg-info">
+					  <div class="caption">Resulting GHG Savings</div>
+					  <div class="value">{{ textOutput('ghg') }}</div>
+					</div></div>
+					<div id = "ghg-cars-col" class="col-sm-3 infobox-outer"><div class="infobox-inner ghg-info">
+					  <div class="caption">Estimated GHG emissions reduction equivalent to taking…</div>
+					  <div class="value">{{ textOutput('n_cars') }}</div>
+					  <div class="caption">Cars Off the Road for a Year</div>
+					</div></div>
+				</div>
 
                 <!-- energy & cost bar chart -->
                 <div id = "ghg-col" class="col-sm-6 main-output-col">

@@ -35,6 +35,7 @@ function(input, output, session) {
                   MG_cur = sum(MG_cur, na.rm = TRUE),
                   MG_saved = sum(MG_saved, na.rm = TRUE),
                   MWh_saved_all = sum(MWh_saved_all, na.rm = TRUE),
+                  MWh_saved_iou = sum(MWh_saved_iou, na.rm = TRUE),
                   MT_CO2e_saved_all = sum(MT_CO2e_saved_all, na.rm = TRUE)) %>%
         mutate(change_prop = MG_saved / MG_2013,
                proportionChangeGoal = 0.25,
@@ -42,15 +43,15 @@ function(input, output, session) {
     } else {
       ret <- util() %>%
         filter(selected) %>%
-        group_by(pwsid, out_iou_kWh_mg, out_all_kWh_mg) %>%
+        group_by(pwsid, out_all_kWh_mg, out_iou_kWh_mg) %>%
         summarise(proportionChangeGoal = mean(ConservationStandard),
                   MG_2013 = sum(MG_2013),
                   MG_cur = sum(MG_cur)) %>%
         mutate(MG_saved = MG_2013 - MG_cur,
                change_prop = MG_saved / MG_2013,
                sav_diff = change_prop - proportionChangeGoal,
-               kWh_saved_all = MG_saved * out_all_kWh_mg,
-               MWh_saved_all = kWh_saved_all / 1e3,
+               MWh_saved_all = MG_saved * out_all_kWh_mg / 1e3,
+               MWh_saved_iou = MG_saved * out_iou_kWh_mg / 1e3,
                MT_CO2e_saved_all = MWh_saved_all * ghg_factor_kg_mwh / 100)
     }
 
@@ -69,8 +70,12 @@ function(input, output, session) {
     switch(as.character(sign(savings()$sav_diff)), '-1' = '(Missed Target)', '0' = '(Met Target)', '1' = '(Savings Exceeding Target)', 'Vs Target')
   })
 
-  output$energy <- reactive({
+  output$energy_all <- reactive({
     paste(format(round(savings()$MWh_saved_all), big.mark = ",", scientific = FALSE), 'MWh')
+  })
+  
+  output$energy_iou <- reactive({
+    paste(format(round(savings()$MWh_saved_iou), big.mark = ",", scientific = FALSE), 'MWh')
   })
 
   output$ghg <- reactive({
