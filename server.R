@@ -128,20 +128,5 @@ function(input, output, session) {
   #     hc_plotOptions(column = list(stacking = 'normal')) %>% 
   #     hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + '$' + this.y.toFixed(1) + 'M'; }"))
   # })
-  # 
-  # output$costperkwh_barchart <- renderHighchart({
-  #   highchart() %>% 
-  #     hc_chart(type = "column") %>% 
-  #     hc_title(text = "Cost per kWh of Statewide Water Conservation vs. Energy IOU Efficiency Programs<br/><b>(Jul - Sep 2015)</b>",
-  #              style = list(fontSize = '14px', useHTML = TRUE)) %>% 
-  #     hc_xAxis(categories = c('Energy Efficiency Programs', 'Water Conservation')) %>% 
-  #     hc_yAxis(title = list(text = "Dollars"),
-  #              stackLabels = list(enabled = TRUE, style = list(fontWeight = 'bold', color = 'gray'),
-  #                                 formatter = JS('function() { return "$" + this.total.toFixed(2); }'))) %>% 
-  #     hc_series(ee_costperkwh_data,
-  #               waterenergy_costperkwh_data) %>% 
-  #     hc_plotOptions(column = list(stacking = 'normal')) %>% 
-  #     hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + '$' + this.y.toFixed(2); }"))
-  # })
 
 }
