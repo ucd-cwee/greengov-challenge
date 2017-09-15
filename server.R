@@ -85,7 +85,8 @@ function(input, output, session) {
   # summary charts -------------------------------------------------------------
   
   output$energy_barchart <- renderHighchart({
-    hchart(eedata_sav_summary, type = "column", hcaes(x = type, y = Gross_GWh, group = EndUse)) %>%
+    eedata <- eedata_sav_summary %>% arrange(EndUse)
+    hchart(eedata, type = "column", hcaes(x = type, y = Gross_GWh, group = EndUse)) %>%
       hc_title(text = "Electricity Savings from Statewide Water Conservation vs. Total First-Year Electricity Savings from Energy IOU Efficiency Programs<br/><b>(Jul 2015 - June 2016)</b>",
                style = list(fontSize = '14px', useHTML = TRUE)) %>%
       hc_xAxis(title = NULL
@@ -97,6 +98,7 @@ function(input, output, session) {
                stackLabels = list(enabled = TRUE, style = list(fontWeight = 'bold', color = 'gray'),
                                   formatter = JS('function() { return this.total.toFixed(1) + " GWh"; }'))) %>%
       hc_plotOptions(column = list(stacking = 'normal', borderWidth = 0)) %>%
+      hc_colors(eedata$col) %>% 
       hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + this.y.toFixed(1) + ' GWh'; }"))
   })
 
