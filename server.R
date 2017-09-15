@@ -91,7 +91,7 @@ function(input, output, session) {
   
   output$energy_barchart <- renderHighchart({
     eedata <- eedata_sav_summary %>% arrange(EndUse)
-    hchart(eedata, type = "column", hcaes(x = type, y = Gross_GWh, group = EndUse)) %>%
+    hchart(eedata, type = "column", hcaes(x = type, y = Gross_GWh, group = EndUse, color = col)) %>%
       hc_title(text = "Electricity Savings from Statewide Water Conservation vs. Total First-Year Electricity Savings from Energy IOU Efficiency Programs<br/><b>(Jul 2015 - June 2016)</b>",
                style = list(fontSize = '14px', useHTML = TRUE)) %>%
       hc_xAxis(title = NULL
@@ -107,26 +107,20 @@ function(input, output, session) {
       hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + this.y.toFixed(1) + ' GWh'; }"))
   })
 
-  # output$cost_barchart <- renderHighchart({
-  #   highchart() %>% 
-  #     hc_chart(type = "column") %>% 
-  #     hc_title(text = "Cost of Statewide Water Conservation vs. Expenditures on Energy IOU Efficiency Programs<br/><b>(Jul - Sep 2015)</b>",
-  #              style = list(fontSize = '14px', useHTML = TRUE)) %>% 
-  #     hc_xAxis(categories = c('Energy Efficiency Programs<br/>by End Use Category', 'Water Conservation')) %>% 
-  #     hc_yAxis(title = list(text = "Million Dollars"),
-  #              stackLabels = list(enabled = TRUE, style = list(fontWeight = 'bold', color = 'gray'),
-  #                                 formatter = JS('function() { return "$" + this.total.toFixed(1) + "M"; }'))) %>% 
-  #     hc_series(appliance_cost_data,
-  #               hvac_cost_data,
-  #               indoorlighting_cost_data,
-  #               other_cost_data,
-  #               outdoorlighting_cost_data,
-  #               process_cost_data,
-  #               refrigeration_cost_data,
-  #               wholebuilding_cost_data,
-  #               waterenergy_cost_data) %>% 
-  #     hc_plotOptions(column = list(stacking = 'normal')) %>% 
-  #     hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + '$' + this.y.toFixed(1) + 'M'; }"))
-  # })
+  output$cost_barchart <- renderHighchart({
+    elec_ce_data <- elec_ce_plot_data %>% arrange(-lcoe_dol2015_MWh_dr)
+    hchart(elec_ce_data, type = "bar", hcaes(x = program, y = lcoe_dol2015_MWh_dr, color = col)) %>%
+      hc_xAxis(title = NULL) %>%
+      hc_yAxis(title = list(text = "Levelized Cost of Electricity Savings ($/MWh)"),
+               max = 275) %>%
+      hc_plotOptions(bar = list(
+        dataLabels = list(
+          enabled = TRUE,
+          style = list(fontWeight = 'bold', color = 'gray'),
+          formatter = JS('function() { return "$" + this.y.toFixed(0) + "/GWh"; }'))
+      )) %>%
+      hc_colors(elec_ce_data$col) %>% 
+      hc_tooltip(formatter = JS("function () { return this.point.series.name + '<br/>' + '$' + this.y.toFixed(1) + '/MWh'; }"))
+  })
 
 }
