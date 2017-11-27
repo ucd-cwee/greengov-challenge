@@ -8,6 +8,7 @@ external.packages:
     RJSONIO
     PKI
     rsconnect
+    RevoUtils
 local.repos: 
 load.external.packages.on.startup: TRUE
 ignored.packages: helperFunctions
