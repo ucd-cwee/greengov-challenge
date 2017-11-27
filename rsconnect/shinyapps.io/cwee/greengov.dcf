@@ -5,9 +5,6 @@ account: cwee
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 93780
-bundleId: 984080
+bundleId: 1099755
 url: https://cwee.shinyapps.io/greengov/
-when: 1505518616.51567
-asMultiple: FALSE
-asStatic: FALSE
-ignoredFiles: LICENSE|README.md|water_dashboard.html|water_dashboard.Rmd
+when: 1511817453.87985
