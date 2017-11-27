@@ -14,9 +14,8 @@ if (!islocal) options(shiny.sanitize.errors = TRUE)
 # pounds per 1 kilogram
 lbs_per_kg <- 2.20462262185
 
-# eGRID emissions factor estimate for the CAMX subgrid (lb CO2e/MWh)
-ghg_factor_lb_mwh <- 570.489
-ghg_factor_kg_mwh <- ghg_factor_lb_mwh / lbs_per_kg
+# eGRID emissions factor estimate; CAMX subgrid & imported electricity (MT CO2e/MWh)
+ghg_factor_mt_mwh <- 0.285
 
 # annual emissions from a typical passenger vehicle
 avg_car_mt_CO2 <- 4.7

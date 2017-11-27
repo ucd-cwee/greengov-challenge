@@ -52,7 +52,7 @@ function(input, output, session) {
                sav_diff = change_prop - proportionChangeGoal,
                MWh_saved_all = MG_saved * out_all_kWh_mg / 1e3,
                MWh_saved_iou = MG_saved * out_iou_kWh_mg / 1e3,
-               MT_CO2e_saved_all = MWh_saved_all * ghg_factor_kg_mwh / 1e3)
+               MT_CO2e_saved_all = MWh_saved_all * ghg_factor_mt_mwh)
     }
 
     ret
